@@ -696,7 +696,7 @@
           <div class="card key">
             <div class="card-k">Ontology &amp; Catalog</div>
             <div class="card-v">YAML in Git</div>
-            <div class="card-a">Synonyms · relationships · terms → Cube models</div>
+            <div class="card-a">Synonyms · relationships · warehouse schema</div>
           </div>
           <div class="card key">
             <div class="card-k">Semantic Layer</div>
@@ -881,11 +881,11 @@
       'Ontology & Catalog': {
         what: 'Cầu nối giữa ngôn ngữ nghiệp vụ và dữ liệu thật. User hỏi bằng từ nghiệp vụ ("doanh thu", "khách VIP"), còn database chỉ có tên bảng, tên cột khó hiểu.',
         parts: [
-          ['Ontology (file YAML trong Git)', 'từ này nghĩa là gì? Chỉ giữ synonym và quan hệ: "doanh số" = "doanh thu", một Đơn hàng thuộc về một Chi nhánh.'],
-          ['Catalog (metadata của Cube)', 'dữ liệu của nó nằm ở đâu? Lấy thẳng từ model của Cube: metric nào, bảng nào, cột nào. Khách đã có DataHub / OpenMetadata thì đọc thêm từ đó, không tự dựng.']
+          ['Ontology (file YAML trong Git)', 'từ này nghĩa là gì? Giữ synonym, thực thể và quan hệ. Mỗi thuật ngữ trỏ tới metric trong Cube (nhánh Cube) hoặc tới bảng / cột thật (nhánh text-to-SQL).'],
+          ['Catalog (schema của warehouse)', 'dữ liệu nằm ở đâu, trông ra sao? Bảng, cột, kiểu dữ liệu, mô tả cột, quan hệ join, giá trị mẫu. Đọc tự động từ information_schema của warehouse, bổ sung mô tả từ DataHub / OpenMetadata nếu khách đã có. Đây là context để LLM sinh SQL đúng ở nhánh text-to-SQL.']
         ],
-        why: 'Agent hiểu đúng câu hỏi và lấy đúng cột, không phải đoán. Định nghĩa metric chỉ nằm ở Cube, ontology tham chiếu tới đó, nên không có hai nơi định nghĩa lệch nhau. Ontology cũng là schema context cho nhánh text-to-SQL.',
-        ex: 'User hỏi "doanh thu tháng này?" → Ontology: "doanh thu" là tiền bán hàng → Cube: metric revenue, tính từ orders.amount → agent gọi đúng metric đó.' },
+        why: 'Agent hiểu đúng câu hỏi và lấy đúng dữ liệu, không phải đoán. Nhánh Cube chỉ cần ontology vì công thức đã nằm trong Cube; nhánh text-to-SQL cần cả ontology lẫn catalog để LLM biết bảng nào, join thế nào.',
+        ex: '"Doanh thu tháng này?" → Ontology: "doanh thu" = metric revenue → gọi Cube. "Top 5 khách mua nhiều nhất ở Đà Nẵng?" (chưa có metric) → Ontology: "khách" = bảng customers → Catalog: join orders.customer_id, cột city có giá trị "Da Nang" → LLM sinh SQL → sqlglot kiểm tra → chạy.' },
       'Semantic Layer': {
         what: 'Nguồn duy nhất định nghĩa cách tính từng metric: lấy từ bảng nào, join thế nào, công thức ra sao. Ontology và catalog đều tham chiếu về đây.',
         why: 'Nhánh chính: agent chỉ gửi metric + dimension + filter, Cube tự sinh SQL, nên cùng câu hỏi luôn ra cùng con số. Câu hỏi nằm ngoài các metric đã định nghĩa thì đi nhánh text-to-SQL: LLM tự sinh SQL, qua sqlglot kiểm tra trước khi chạy.',
@@ -967,7 +967,7 @@
       'Ontology & Catalog': [
         ['Synonyms', 'các cách gọi khác nhau của cùng một khái niệm: "doanh số", "sales", "doanh thu".'],
         ['relationships', 'quan hệ giữa các thực thể: Đơn hàng thuộc Chi nhánh, Chi nhánh thuộc Vùng.'],
-        ['terms → Cube models', 'mỗi thuật ngữ trỏ tới metric / dimension trong Cube, không tự định nghĩa lại công thức.']],
+        ['warehouse schema', 'catalog: bảng, cột, kiểu dữ liệu, join và giá trị mẫu đọc từ warehouse của khách; LLM dựa vào đây để sinh SQL ở nhánh text-to-SQL.']],
       'Semantic Layer': [
         ['RLS', 'Row-Level Security: tự lọc dòng dữ liệu theo quyền của user. Trưởng chi nhánh HCM hỏi thì chỉ thấy dòng của HCM, dù agent không hề thêm filter.'],
         ['Metric source of truth', 'định nghĩa metric chỉ viết một lần ở đây; ontology, rules và eval đều tham chiếu về.'],
