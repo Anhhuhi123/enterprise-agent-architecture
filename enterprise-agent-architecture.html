@@ -430,6 +430,10 @@
   .tip-row b { display: block; font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1px; }
   .tip-row.ex { padding: 8px 10px; border-radius: 7px; background: rgba(233,180,76,0.07); border-left: 2px solid var(--accent); }
   .tip-row.ex b { color: var(--accent); }
+  .tip-parts { list-style: none; display: grid; gap: 4px; }
+  .tip-parts li { position: relative; padding-left: 14px; }
+  .tip-parts li::before { content: ""; position: absolute; left: 0; top: 9px; width: 7px; height: 1px; background: var(--accent); }
+  .tip-parts strong { color: var(--text); font-weight: 600; }
 
   /* ---------- Navigation ---------- */
   .nav {
@@ -705,7 +709,7 @@
           <div class="card key">
             <div class="card-k">Ontology &amp; Catalog</div>
             <div class="card-v">YAML in Git · DataHub</div>
-            <div class="card-a">Concepts · glossary · synonyms, linked to tables &amp; lineage. OpenMetadata alt.</div>
+            <div class="card-a">Business terms → tables &amp; columns · OpenMetadata alt.</div>
           </div>
           <div class="card key">
             <div class="card-k">Semantic Layer</div>
@@ -895,9 +899,13 @@
         what: 'Redis giữ hội thoại hiện tại. PostgreSQL lưu checkpoint của graph và bộ nhớ dài hạn.',
         why: 'Một lượt chạy dài có thể tiếp tục sau khi lỗi hoặc sau khi chờ duyệt; agent nhớ được sở thích của user.' },
       'Ontology & Catalog': {
-        what: 'Từ điển nghiệp vụ gắn với danh bạ dữ liệu. Phía nghiệp vụ: khái niệm (Khách hàng, Đơn hàng, Chi nhánh), quan hệ và từ đồng nghĩa ("doanh số" = "doanh thu"). Phía dữ liệu: bảng, cột, người sở hữu, lineage, cột nào chứa PII.',
-        why: 'Trả lời "từ này nghĩa là gì và nằm ở bảng / cột nào?". Ontology lưu YAML trong Git (Neo4j chỉ khi cần suy luận quan hệ nhiều tầng); DataHub giữ schema, lineage và liên kết từng khái niệm tới cột thật. Onboarding đọc schema từ đây để soạn domain model; agent dẫn được nguồn của con số.',
-        ex: '"Doanh thu thuần chi nhánh mình" → khái niệm Doanh thu thuần → cột orders.amount (VND gồm VAT, phòng Tài chính sở hữu, lấy từ ERP), entity Chi nhánh = chi nhánh của user.' },
+        what: 'Cầu nối giữa ngôn ngữ nghiệp vụ và dữ liệu thật. User hỏi bằng từ nghiệp vụ ("doanh thu", "khách VIP"), còn database chỉ có tên bảng, tên cột khó hiểu.',
+        parts: [
+          ['Ontology (file YAML trong Git)', 'từ này nghĩa là gì? Ví dụ "doanh số" = "doanh thu", một Đơn hàng thuộc về một Chi nhánh.'],
+          ['Catalog (DataHub)', 'dữ liệu của nó nằm ở đâu? Bảng nào, cột nào, ai quản lý, lấy từ hệ thống nào.']
+        ],
+        why: 'Agent hiểu đúng câu hỏi và lấy đúng cột, không phải đoán. Khi trả lời, agent cũng chỉ ra được con số lấy từ đâu.',
+        ex: 'User hỏi "doanh thu tháng này?" → Ontology: "doanh thu" là tiền bán hàng → Catalog: nằm ở cột orders.amount, phòng Tài chính quản lý, lấy từ ERP → agent truy vấn đúng cột đó.' },
       'Semantic Layer': {
         what: 'Định nghĩa cách tính từng metric: lấy từ bảng nào, join thế nào, công thức ra sao.',
         why: 'Agent chỉ gửi metric + dimension + filter, Cube tự sinh SQL. LLM không tự bịa công thức nên cùng câu hỏi luôn ra cùng con số. Có sẵn RLS và caching.',
@@ -970,6 +978,9 @@
         '<div class="tip-k">' + esc(key) + '</div>' +
         '<div class="tip-v">' + esc(card.querySelector('.card-v').textContent) + '</div>' +
         '<div class="tip-row"><b>Là gì</b>' + esc(d.what) + '</div>' +
+        (d.parts ? '<div class="tip-row"><b>Gồm 2 phần</b><ul class="tip-parts">' +
+          d.parts.map(function (p) { return '<li><strong>' + esc(p[0]) + '</strong>: ' + esc(p[1]) + '</li>'; }).join('') +
+          '</ul></div>' : '') +
         '<div class="tip-row"><b>Để làm gì</b>' + esc(d.why) + '</div>' +
         (d.ex ? '<div class="tip-row ex"><b>Ví dụ</b>' + esc(d.ex) + '</div>' : '');
       var st = stage.getBoundingClientRect();
