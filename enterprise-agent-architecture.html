@@ -701,11 +701,11 @@
           <div class="band-name">Domain Intelligence</div>
           <div class="band-desc">Enterprise knowledge &amp; business semantics the agent reasons over</div>
         </div>
-        <div class="cards" style="--n:7">
+        <div class="cards" style="--n:5">
           <div class="card key">
-            <div class="card-k">Ontology</div>
-            <div class="card-v">YAML in Git</div>
-            <div class="card-a">Entities · glossary · synonyms. Neo4j if needed</div>
+            <div class="card-k">Ontology &amp; Catalog</div>
+            <div class="card-v">YAML in Git · DataHub</div>
+            <div class="card-a">Concepts · glossary · synonyms, linked to tables &amp; lineage. OpenMetadata alt.</div>
           </div>
           <div class="card key">
             <div class="card-k">Semantic Layer</div>
@@ -713,19 +713,9 @@
             <div class="card-a">RLS · caching · dbt SL alt.</div>
           </div>
           <div class="card">
-            <div class="card-k">Schema Registry / Catalog</div>
-            <div class="card-v">DataHub</div>
-            <div class="card-a">OpenMetadata</div>
-          </div>
-          <div class="card">
             <div class="card-k">Business Rules</div>
             <div class="card-v">Metric defs</div>
             <div class="card-a">GoRules Zen · Drools</div>
-          </div>
-          <div class="card">
-            <div class="card-k">Access Policy</div>
-            <div class="card-v">OPA</div>
-            <div class="card-a">Enforced via RLS · doc ACL</div>
           </div>
           <div class="card">
             <div class="card-k">Guardrails &amp; Validation</div>
@@ -904,26 +894,18 @@
       'Agent State / Memory': {
         what: 'Redis giữ hội thoại hiện tại. PostgreSQL lưu checkpoint của graph và bộ nhớ dài hạn.',
         why: 'Một lượt chạy dài có thể tiếp tục sau khi lỗi hoặc sau khi chờ duyệt; agent nhớ được sở thích của user.' },
-      'Ontology': {
-        what: 'Từ điển nghiệp vụ: các khái niệm (Khách hàng, Đơn hàng, Chi nhánh), quan hệ giữa chúng và từ đồng nghĩa ("doanh số" = "doanh thu" = "revenue").',
-        why: 'Trả lời câu hỏi "từ này nghĩa là gì?", giúp agent map ngôn ngữ của user sang đúng khái niệm nghiệp vụ. Lưu dạng file YAML trong Git; chỉ dùng Neo4j khi cần suy luận quan hệ nhiều tầng.',
-        ex: '"Doanh thu thuần chi nhánh mình" → metric doanh_thu_thuan, entity Chi nhánh = chi nhánh của user.' },
+      'Ontology & Catalog': {
+        what: 'Từ điển nghiệp vụ gắn với danh bạ dữ liệu. Phía nghiệp vụ: khái niệm (Khách hàng, Đơn hàng, Chi nhánh), quan hệ và từ đồng nghĩa ("doanh số" = "doanh thu"). Phía dữ liệu: bảng, cột, người sở hữu, lineage, cột nào chứa PII.',
+        why: 'Trả lời "từ này nghĩa là gì và nằm ở bảng / cột nào?". Ontology lưu YAML trong Git (Neo4j chỉ khi cần suy luận quan hệ nhiều tầng); DataHub giữ schema, lineage và liên kết từng khái niệm tới cột thật. Onboarding đọc schema từ đây để soạn domain model; agent dẫn được nguồn của con số.',
+        ex: '"Doanh thu thuần chi nhánh mình" → khái niệm Doanh thu thuần → cột orders.amount (VND gồm VAT, phòng Tài chính sở hữu, lấy từ ERP), entity Chi nhánh = chi nhánh của user.' },
       'Semantic Layer': {
         what: 'Định nghĩa cách tính từng metric: lấy từ bảng nào, join thế nào, công thức ra sao.',
         why: 'Agent chỉ gửi metric + dimension + filter, Cube tự sinh SQL. LLM không tự bịa công thức nên cùng câu hỏi luôn ra cùng con số. Có sẵn RLS và caching.',
         ex: 'doanh_thu_thuan = SUM(amount) − hàng trả − chiết khấu, lọc tháng 8 và theo chi nhánh của user.' },
-      'Schema Registry / Catalog': {
-        what: 'Danh bạ của toàn bộ dữ liệu: bảng, cột, người sở hữu, nguồn gốc (lineage), cột nào chứa dữ liệu cá nhân.',
-        why: 'Khi onboarding, lấy schema và mô tả từ đây để dựng nhanh domain model. Agent cũng dẫn được nguồn của con số.',
-        ex: 'orders.amount là VND đã gồm VAT, thuộc phòng Tài chính, lấy từ ERP.' },
       'Business Rules': {
         what: 'Logic nghiệp vụ cố định, không để LLM đoán. Quy tắc tính toán nằm trong metric definition; quy tắc quyết định viết dạng decision table, chạy bằng rules engine.',
         why: 'Tầng Answer Validation dùng các rule này để kiểm tra kết quả trước khi trả lời.',
         ex: 'Doanh thu ghi nhận theo ngày giao hàng, không theo ngày đặt. Đơn trên 500 triệu phải có giám đốc duyệt.' },
-      'Access Policy': {
-        what: 'Luật ai được xem / làm gì, viết một lần dưới dạng policy trong OPA.',
-        why: 'Được thực thi bằng RLS ở semantic layer / DB và bằng ACL tài liệu khi search, nên dữ liệu bị hạn chế không bao giờ tới được LLM. Tách khỏi Business Rules vì do IT / Security quản lý, không phải Business.',
-        ex: 'Trưởng chi nhánh chỉ xem dữ liệu chi nhánh mình. Nhân viên kinh doanh không xem được cột lương.' },
       'Guardrails & Validation': {
         what: 'Các lớp kiểm tra an toàn cho query và câu trả lời.',
         why: 'sqlglot parse query trước khi chạy (chặn DELETE / UPDATE, quét bảng quá lớn, cột không tồn tại). NeMo giữ agent trong phạm vi. Presidio che dữ liệu cá nhân. Injection filter chặn lệnh ẩn trong tài liệu hoặc trang web.',
