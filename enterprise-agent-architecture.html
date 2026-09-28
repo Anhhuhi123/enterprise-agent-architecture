@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Agent Architecture</title>
+<style>
+  :root {
+    --bg: #0a0e15;
+    --bg-2: #0e1420;
+    --surface: #131a27;
+    --surface-2: #182132;
+    --border: #243049;
+    --border-soft: #1c2638;
+    --text: #e8edf5;
+    --text-2: #b4bdcc;
+    --muted: #7d889c;
+    --faint: #56617a;
+    --line: #3a4760;
+    --accent: #e9b44c;
+    --accent-2: #f3cd80;
+    --accent-dim: rgba(233, 180, 76, 0.10);
+    --accent-line: rgba(233, 180, 76, 0.55);
+    --sans: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 700px at 50% 45%, #111a2a 0%, transparent 70%),
+      var(--bg);
+  }
+
+  /* Fixed 16:9 stage, scaled to fit any viewport */
+  .stage {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 1600px; height: 900px;
+    transform-origin: center center;
+    transform: translate(-50%, -50%);
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    padding: 44px 64px 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s;
+    background:
+      radial-gradient(900px 500px at 55% 55%, rgba(233,180,76,0.035), transparent 70%),
+      linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+    border: 1px solid var(--border-soft);
+    overflow: hidden;
+  }
+  .slide.active { opacity: 1; visibility: visible; }
+  .no-anim .slide { transition: none; }
+
+  /* ---------- Header ---------- */
+  .head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ""; width: 18px; height: 1px; background: var(--accent);
+  }
+  h1 {
+    font-size: 42px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-top: 12px;
+    line-height: 1.1;
+  }
+  .subtitle {
+    margin-top: 8px;
+    font-size: 19px;
+    color: var(--text-2);
+    font-weight: 400;
+  }
+  .status {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    margin-top: 2px;
+  }
+
+  svg.i { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* ---------- Slide 1 : architecture ---------- */
+  .arch {
+    position: relative;
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 36px 1fr 36px 300px;
+    align-items: stretch;
+  }
+  .col-main { grid-column: 2; }
+  .col-side { grid-column: 4; }
+
+  .links {
+    position: absolute; left: 0; top: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .arrow { position: relative; height: 16px; }
+  .arrow::before {
+    content: ""; position: absolute; left: 50%; top: 2px; bottom: 6px;
+    width: 1px; background: var(--line);
+  }
+  .arrow::after {
+    content: ""; position: absolute; left: 50%; bottom: 1px; transform: translateX(-50%);
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid var(--line);
+  }
+  .arrow.accent::before { background: var(--accent-line); }
+  .arrow.accent::after { border-top-color: var(--accent); }
+
+  .endpoint {
+    justify-self: center;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .endpoint .i { color: var(--muted); }
+  .endpoint-wrap { display: flex; justify-content: center; }
+  .endpoint.answer { border-color: #3b4a66; background: var(--surface-2); }
+
+  .layer {
+    margin: 0 28px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 13px 18px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .layer.muted { background: rgba(19, 26, 39, 0.65); border-color: var(--border-soft); }
+
+  .layer-title {
+    width: 206px; flex: none;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .layer-name {
+    display: flex; align-items: center; gap: 9px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .layer-name .i { color: var(--text-2); }
+  .layer-role { font-size: 12px; color: var(--muted); padding-left: 25px; }
+  .layer-role.accent { color: var(--accent); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; flex: 1; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: rgba(255,255,255,0.015);
+    font-size: 13px;
+    color: var(--text-2);
+    white-space: nowrap;
+  }
+  .chip .i { width: 14px; height: 14px; color: var(--muted); }
+  .layer.orch { background: var(--surface-2); border-color: #2d3a55; }
+  .layer.orch .chip { color: var(--text); }
+
+  /* Domain Intelligence — the highlighted layer */
+  .di {
+    position: relative;
+    border: 1.5px solid var(--accent-line);
+    border-radius: 14px;
+    padding: 14px 20px 14px;
+    background:
+      linear-gradient(180deg, rgba(233,180,76,0.09) 0%, rgba(233,180,76,0.025) 100%),
+      var(--surface);
+    box-shadow: 0 0 0 5px rgba(233,180,76,0.05), 0 18px 50px -20px rgba(233,180,76,0.25);
+  }
+  .di-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+  .di-name {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono);
+    font-size: 15px; font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+  }
+  .di-name .i { width: 18px; height: 18px; color: var(--accent); }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--accent-line);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .di-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .di-card {
+    border: 1px solid rgba(233,180,76,0.28);
+    border-radius: 10px;
+    background: rgba(10, 14, 21, 0.55);
+    padding: 12px 16px;
+  }
+  .di-card-top { display: flex; align-items: center; justify-content: space-between; }
+  .di-card-title { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 600; color: var(--text); }
+  .di-card-title .i { color: var(--accent); width: 17px; height: 17px; }
+  .num { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .di-card ul { list-style: none; margin-top: 8px; display: grid; gap: 4px; }
+  .di-card li {
+    position: relative; padding-left: 16px;
+    font-size: 13.5px; color: var(--text-2);
+  }
+  .di-card li::before {
+    content: ""; position: absolute; left: 0; top: 8px;
+    width: 7px; height: 1px; background: var(--accent);
+  }
+
+  .di-onboard {
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 1px dashed rgba(233,180,76,0.3);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px;
+  }
+  .ob-label {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent);
+    margin-right: 6px;
+    white-space: nowrap;
+  }
+  .ob-src {
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-2);
+    white-space: nowrap;
+  }
+  .ob-arrow { color: var(--accent); font-family: var(--mono); padding: 0 2px; }
+  .ob-out {
+    padding: 4px 10px;
+    border: 1px solid var(--accent-line);
+    border-radius: 6px;
+    background: var(--accent-dim);
+    color: var(--accent-2);
+    white-space: nowrap;
+  }
+
+  /* Side notes */
+  .note {
+    align-self: center;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: rgba(19, 26, 39, 0.6);
+  }
+  .note-label {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .note p { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+  .note code {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+  }
+
+  .callout {
+    position: relative;
+    align-self: center;
+    border: 1px solid var(--accent-line);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 18px;
+    background: linear-gradient(180deg, rgba(233,180,76,0.08), rgba(233,180,76,0.02));
+  }
+  .callout::before {
+    content: ""; position: absolute; right: 100%; top: 50%;
+    width: 37px; height: 1px;
+    background: repeating-linear-gradient(90deg, var(--accent-line) 0 4px, transparent 4px 7px);
+  }
+  .callout::after {
+    content: ""; position: absolute; right: calc(100% + 34px); top: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
+    transform: translateY(-50%);
+    background: var(--accent);
+  }
+  .callout .note-label { color: var(--accent); }
+  .callout p { font-size: 14.5px; line-height: 1.55; color: var(--text); }
+
+  .footer-legend {
+    position: absolute; left: 64px; bottom: 30px;
+    display: flex; gap: 32px;
+    font-size: 13.5px;
+    color: var(--text-2);
+  }
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+  .legend-item b { font-weight: 600; color: var(--text); }
+  .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #3b4a66; background: var(--surface-2); }
+  .sw.accent { border-color: var(--accent); background: rgba(233,180,76,0.25); }
+  .sw-line { width: 22px; height: 0; border-top: 1px solid var(--line); position: relative; }
+  .sw-line.accent { border-top: 1px dashed var(--accent); }
+
+  /* ---------- Slide 2 : full stack ---------- */
+  .stack { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .band {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: stretch;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 12px 16px;
+  }
+  .band.dim { background: rgba(19, 26, 39, 0.6); border-color: var(--border-soft); }
+  .band.dimmer { background: rgba(19, 26, 39, 0.4); border-color: var(--border-soft); }
+  .band-label { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .band-idx { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--faint); }
+  .band-name { font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; line-height: 1.3; }
+  .band-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  .cards { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 8px; }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(255,255,255,0.018);
+    padding: 10px 12px;
+    display: flex; flex-direction: column; justify-content: center; gap: 3px;
+    min-width: 0;
+  }
+  .card-k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .card-v { font-size: 14.5px; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .card-s { font-size: 12px; color: var(--text-2); line-height: 1.35; }
+  .card-a { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+  .band.dim .card-v, .band.dimmer .card-v { color: var(--text-2); }
+  .band.dimmer .card { background: transparent; border-color: var(--border-soft); }
+
+  .card.new { border-style: dashed; }
+
+  .band.hl {
+    border: 1.5px solid var(--accent-line);
+    background:
+      linear-gradient(180deg, rgba(233,180,76,0.09) 0%, rgba(233,180,76,0.025) 100%),
+      var(--surface);
+    box-shadow: 0 0 0 5px rgba(233,180,76,0.05), 0 18px 50px -20px rgba(233,180,76,0.25);
+    padding: 14px 16px;
+  }
+  .band.hl .band-idx { color: var(--accent); }
+  .band.hl .band-name { color: var(--accent-2); }
+  .band.hl .band-desc { color: var(--text-2); }
+  .band.hl .card { border-color: rgba(233,180,76,0.28); background: rgba(10,14,21,0.55); padding: 11px 12px; }
+  .band.hl .card-k { color: var(--accent); }
+  .band.hl .card.key { border-color: var(--accent-line); background: rgba(233,180,76,0.07); }
+
+  .stack-foot {
+    position: absolute; left: 64px; right: 260px; bottom: 26px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .principle-line {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 14px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .principle-line strong { color: var(--accent-2); font-weight: 600; }
+  .key-legend { display: flex; gap: 18px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .key-legend span { display: flex; align-items: center; gap: 7px; }
+  .key-legend i { font-style: normal; font-size: 12.5px; }
+  .key-legend .p { color: var(--text); font-weight: 500; }
+  .key-legend .box { width: 14px; height: 10px; border: 1px dashed var(--muted); border-radius: 3px; }
+
+  /* ---------- Navigation ---------- */
+  .nav {
+    position: absolute; right: 64px; bottom: 26px;
+    display: flex; align-items: center; gap: 14px;
+    z-index: 10;
+  }
+  .counter { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; color: var(--muted); }
+  .counter b { color: var(--text); font-weight: 600; }
+  .nav button {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .nav button:hover:not(:disabled) { border-color: #3b4a66; color: var(--text); }
+  .nav button:disabled { opacity: .35; cursor: default; }
+  .nav button:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+  .progress {
+    position: absolute; left: 0; bottom: 0; height: 2px;
+    background: var(--accent); opacity: .7;
+    transition: width .25s ease;
+    z-index: 10;
+  }
+</style>
+</head>
+<body class="no-anim">
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></symbol>
+    <symbol id="i-orch" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="8.5" y="14" width="7" height="7" rx="1.5"/><path d="M6.5 10v2h11v-2M12 12v2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/></symbol>
+    <symbol id="i-graph" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.5 6.2l7 .6M7.2 8.2l3.7 7.5M16.8 9.2l-3.6 6.6"/></symbol>
+    <symbol id="i-metric" viewBox="0 0 24 24"><path d="M3 20h18M6.5 20v-7M11.5 20V5M16.5 20v-10"/></symbol>
+    <symbol id="i-rules" viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.4 1.4L7.5 4.8M3.5 12l1.4 1.4 2.6-2.6M3.5 18l1.4 1.4 2.6-2.6"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13"/><path d="M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 21H20"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></symbol>
+    <symbol id="i-api" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-answer" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<div class="stage" id="stage">
+
+  <!-- ======================= SLIDE 1 ======================= -->
+  <section class="slide active" aria-label="Slide 1: Enterprise Agent Architecture">
+    <div class="head">
+      <div>
+        <div class="eyebrow">Architecture Proposal · Enterprise AI Agent</div>
+        <h1>Enterprise Agent Architecture</h1>
+        <div class="subtitle">From Generic Agent Orchestration to Domain-Aware Enterprise Intelligence</div>
+      </div>
+      <div class="status">Draft for discussion</div>
+    </div>
+
+    <div class="arch" id="arch">
+      <svg class="links" id="links" aria-hidden="true"></svg>
+
+      <!-- User -->
+      <div class="col-main endpoint-wrap" style="grid-row:1">
+        <div class="endpoint"><svg class="i"><use href="#i-user"/></svg>User</div>
+      </div>
+      <div class="col-main arrow" style="grid-row:2"></div>
+
+      <!-- Agent Orchestrator -->
+      <div class="col-main layer orch" id="n-orch" style="grid-row:3">
+        <div class="layer-title">
+          <div class="layer-name"><svg class="i"><use href="#i-orch"/></svg>Agent Orchestrator</div>
+          <div class="layer-role">Execution &amp; reasoning</div>
+        </div>
+        <div class="chips">
+          <span class="chip">Intent Understanding</span>
+          <span class="chip">Planning / Reasoning</span>
+          <span class="chip">Memory / State</span>
+          <span class="chip">Tool Selection</span>
+          <span class="chip">Retry / Execution Control</span>
+        </div>
+      </div>
+      <div class="col-side note" style="grid-row:1 / 4; align-self:end">
+        <div class="note-label">Generic agent stack · commoditizing</div>
+        <p><code>LLM + RAG + Tool Calling + Memory + LangGraph + APIs</code><br>Reproducible by any capable team.</p>
+      </div>
+      <div class="col-main arrow accent" style="grid-row:4"></div>
+
+      <!-- Domain Intelligence -->
+      <div class="col-main di" id="n-di" style="grid-row:5">
+        <div class="di-head">
+          <div class="di-name"><svg class="i"><use href="#i-layers"/></svg>Domain Intelligence</div>
+          <span class="tag">Potential differentiation layer</span>
+        </div>
+        <div class="di-grid">
+          <div class="di-card">
+            <div class="di-card-top">
+              <div class="di-card-title"><svg class="i"><use href="#i-graph"/></svg>Ontology</div>
+              <span class="num">01</span>
+            </div>
+            <ul>
+              <li>Business Concepts</li>
+              <li>Entities &amp; Relationships</li>
+              <li>Domain Semantics</li>
+            </ul>
+          </div>
+          <div class="di-card">
+            <div class="di-card-top">
+              <div class="di-card-title"><svg class="i"><use href="#i-metric"/></svg>Semantic Layer</div>
+              <span class="num">02</span>
+            </div>
+            <ul>
+              <li>Metrics / Dimensions</li>
+              <li>Business Definitions</li>
+              <li>Data Mapping</li>
+            </ul>
+          </div>
+          <div class="di-card">
+            <div class="di-card-top">
+              <div class="di-card-title"><svg class="i"><use href="#i-rules"/></svg>Business Rules</div>
+              <span class="num">03</span>
+            </div>
+            <ul>
+              <li>Policies</li>
+              <li>Constraints</li>
+              <li>Deterministic Rules</li>
+            </ul>
+          </div>
+        </div>
+        <div class="di-onboard">
+          <span class="ob-label">Domain Onboarding</span>
+          <span class="ob-src">Experts · Schemas · Docs · Domain packs</span>
+          <span class="ob-arrow">→</span>
+          <span class="ob-src">Draft model</span>
+          <span class="ob-arrow">→</span>
+          <span class="ob-src">Expert review</span>
+          <span class="ob-arrow">→</span>
+          <span class="ob-out">Version &amp; release · Git v1.2</span>
+          <span class="ob-arrow">→</span>
+          <span class="ob-src">Active in agent · rollback-ready</span>
+        </div>
+      </div>
+      <div class="col-side callout" style="grid-row:5">
+        <div class="note-label">Potential differentiation</div>
+        <p>Encode enterprise domain knowledge and business semantics so agents operate on meaningful business concepts, not only raw data.</p>
+      </div>
+      <div class="col-main arrow accent" style="grid-row:6"></div>
+
+      <!-- Tool Layer -->
+      <div class="col-main layer muted" style="grid-row:7">
+        <div class="layer-title">
+          <div class="layer-name"><svg class="i"><use href="#i-api"/></svg>Tool Layer</div>
+          <div class="layer-role">Retrieve &amp; act</div>
+        </div>
+        <div class="chips">
+          <span class="chip"><svg class="i"><use href="#i-db"/></svg>SQL / Database</span>
+          <span class="chip"><svg class="i"><use href="#i-book"/></svg>RAG / Knowledge Base</span>
+          <span class="chip"><svg class="i"><use href="#i-globe"/></svg>Web Search</span>
+          <span class="chip"><svg class="i"><use href="#i-api"/></svg>Enterprise APIs</span>
+        </div>
+      </div>
+      <div class="col-main arrow" style="grid-row:8"></div>
+
+      <!-- Validation & Governance -->
+      <div class="col-main layer muted" id="n-val" style="grid-row:9">
+        <div class="layer-title">
+          <div class="layer-name"><svg class="i"><use href="#i-shield"/></svg>Validation &amp; Governance</div>
+          <div class="layer-role accent">Checked against domain rules</div>
+        </div>
+        <div class="chips">
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Query / SQL Validation</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Schema Validation</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Business Rule Validation</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Access Control</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Guardrails</span>
+        </div>
+      </div>
+      <div class="col-side note" style="grid-row:7 / 12">
+        <div class="note-label">Status · hypothesis</div>
+        <p>Domain Intelligence is the direction under exploration. Its value is to be validated on pilot business domains before it is positioned as the core differentiator.</p>
+      </div>
+      <div class="col-main arrow" style="grid-row:10"></div>
+
+      <!-- Business Answer -->
+      <div class="col-main endpoint-wrap" style="grid-row:11">
+        <div class="endpoint answer"><svg class="i"><use href="#i-answer"/></svg>Business Answer</div>
+      </div>
+    </div>
+
+    <div class="footer-legend">
+      <div class="legend-item"><span class="sw"></span><span><b>Agent</b> = execution &amp; reasoning layer</span></div>
+      <div class="legend-item"><span class="sw accent"></span><span><b>Domain Intelligence</b> = potential differentiation layer</span></div>
+      <div class="legend-item"><span class="sw-line"></span><span>Retry / re-plan loop</span></div>
+      <div class="legend-item"><span class="sw-line accent"></span><span>Domain rules used in validation</span></div>
+    </div>
+  </section>
+
+  <!-- ======================= SLIDE 2 ======================= -->
+  <section class="slide" aria-label="Slide 2: Technology Stack">
+    <div class="head">
+      <div>
+        <div class="eyebrow">Architecture Proposal · Enterprise AI Agent</div>
+        <h1>Technology Stack</h1>
+        <div class="subtitle">Implementation Stack for the Enterprise Agent Platform</div>
+      </div>
+      <div class="status">Draft for discussion</div>
+    </div>
+
+    <div class="stack">
+      <!-- Layer 1 -->
+      <div class="band dim">
+        <div class="band-label">
+          <div class="band-idx">LAYER 01</div>
+          <div class="band-name">API Layer</div>
+          <div class="band-desc">How clients reach the agent</div>
+        </div>
+        <div class="cards" style="--n:1">
+          <div class="card"><div class="card-k">Backend API</div><div class="card-v">FastAPI</div><div class="card-a">REST · SSE streaming of agent responses</div></div>
+        </div>
+      </div>
+
+      <!-- Layer 2 -->
+      <div class="band">
+        <div class="band-label">
+          <div class="band-idx">LAYER 02</div>
+          <div class="band-name">AI / Agent</div>
+          <div class="band-desc">Reasoning, planning &amp; execution control</div>
+        </div>
+        <div class="cards" style="--n:6">
+          <div class="card"><div class="card-k">LLM</div><div class="card-v">GPT · Claude · Gemini</div><div class="card-a">Open-source: Llama · Qwen</div></div>
+          <div class="card"><div class="card-k">LLM Gateway</div><div class="card-v">LiteLLM</div><div class="card-a">Routing · fallback · cost control</div></div>
+          <div class="card"><div class="card-k">Orchestration</div><div class="card-v">LangGraph · LangChain</div><div class="card-a">Stateful graphs · model, tool &amp; retriever integrations</div></div>
+          <div class="card"><div class="card-k">Tool Calling &amp; Structured Output</div><div class="card-v">LangChain · Pydantic</div><div class="card-a">Function calling · JSON schema</div></div>
+          <div class="card"><div class="card-k">Embedding &amp; Rerank</div><div class="card-v">BGE-M3 · OpenAI</div><div class="card-a">Cohere Rerank · BGE Reranker</div></div>
+          <div class="card"><div class="card-k">Agent State / Memory</div><div class="card-v">Redis · PostgreSQL</div><div class="card-a">Short-term · checkpoints &amp; long-term</div></div>
+        </div>
+      </div>
+
+      <!-- Layer 3 -->
+      <div class="band hl">
+        <div class="band-label">
+          <div class="band-idx">LAYER 03</div>
+          <div class="band-name">Domain Intelligence</div>
+          <div class="band-desc">Enterprise knowledge &amp; business semantics the agent reasons over</div>
+        </div>
+        <div class="cards" style="--n:6">
+          <div class="card key">
+            <div class="card-k">Ontology</div>
+            <div class="card-v">Domain Ontology / Business Model</div>
+            <div class="card-s">Domain concepts, entities, relationships &amp; semantics</div>
+          </div>
+          <div class="card">
+            <div class="card-k">Semantic Layer</div>
+            <div class="card-v">Cube.dev</div>
+            <div class="card-a">dbt Semantic Layer</div>
+          </div>
+          <div class="card">
+            <div class="card-k">Schema Registry / Catalog</div>
+            <div class="card-v">DataHub</div>
+            <div class="card-a">OpenMetadata</div>
+          </div>
+          <div class="card">
+            <div class="card-k">Business Rules / Policy</div>
+            <div class="card-v">OPA</div>
+            <div class="card-a">Open Policy Agent · decision tables</div>
+          </div>
+          <div class="card">
+            <div class="card-k">Guardrails &amp; Validation</div>
+            <div class="card-v">sqlglot · NeMo Guardrails</div>
+            <div class="card-a">Guardrails AI</div>
+          </div>
+          <div class="card new">
+            <div class="card-k">Domain Onboarding</div>
+            <div class="card-v">Git-versioned domain model</div>
+            <div class="card-a">Expert review &amp; approval workflow</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 4 -->
+      <div class="band dim">
+        <div class="band-label">
+          <div class="band-idx">LAYER 04</div>
+          <div class="band-name">Data &amp; Knowledge</div>
+          <div class="band-desc">Structured, vector &amp; document sources</div>
+        </div>
+        <div class="cards" style="--n:5">
+          <div class="card"><div class="card-k">Analytics</div><div class="card-v">ClickHouse</div><div class="card-a">Columnar OLAP</div></div>
+          <div class="card"><div class="card-k">Relational</div><div class="card-v">PostgreSQL</div><div class="card-a">App data · metadata</div></div>
+          <div class="card"><div class="card-k">Vector Database</div><div class="card-v">Qdrant · Pinecone</div><div class="card-a">Self-hosted vs managed · pgvector at small scale</div></div>
+          <div class="card"><div class="card-k">Documents</div><div class="card-v">S3 · Docling</div><div class="card-a">Unstructured · parsing, chunking, OCR</div></div>
+          <div class="card"><div class="card-k">Enterprise Integration</div><div class="card-v">Enterprise APIs</div><div class="card-a">Airbyte · dbt · Airflow pipelines</div></div>
+        </div>
+      </div>
+
+      <!-- Layer 5 -->
+      <div class="band dimmer">
+        <div class="band-label">
+          <div class="band-idx">LAYER 05</div>
+          <div class="band-name">Infrastructure / Observability</div>
+        </div>
+        <div class="cards" style="--n:7">
+          <div class="card"><div class="card-k">Runtime</div><div class="card-v">Docker</div><div class="card-a">AWS ECS</div></div>
+          <div class="card"><div class="card-k">Cache / Queue</div><div class="card-v">Redis</div><div class="card-a">Kafka / SQS</div></div>
+          <div class="card"><div class="card-k">LLM Tracing</div><div class="card-v">Langfuse</div><div class="card-a">LangSmith</div></div>
+          <div class="card"><div class="card-k">Evaluation Framework</div><div class="card-v">Ragas · DeepEval</div><div class="card-a">Promptfoo</div></div>
+          <div class="card new"><div class="card-k">Evaluation Data</div><div class="card-v">Custom client datasets</div><div class="card-a">Full conversations scored vs client-expected outcomes</div></div>
+          <div class="card"><div class="card-k">Monitoring</div><div class="card-v">OpenTelemetry</div><div class="card-a">Prometheus · Grafana</div></div>
+          <div class="card"><div class="card-k">CI/CD &amp; IaC</div><div class="card-v">GitHub Actions</div><div class="card-a">ArgoCD · Terraform · Vault</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack-foot">
+      <div class="key-legend">
+        <span><i class="p">Bold</i> primary option</span>
+        <span><i>Grey</i> alternatives / notes</span>
+        <span><span class="box"></span> new capability</span>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav" aria-label="Slide navigation">
+    <button id="prev" aria-label="Previous slide"><svg class="i"><use href="#i-left"/></svg></button>
+    <div class="counter" id="counter"><b>01</b> / 02</div>
+    <button id="next" aria-label="Next slide"><svg class="i"><use href="#i-right"/></svg></button>
+  </nav>
+  <div class="progress" id="progress"></div>
+</div>
+
+<script>
+  (function () {
+    var stage = document.getElementById('stage');
+    var slides = document.querySelectorAll('.slide');
+    var counter = document.getElementById('counter');
+    var progress = document.getElementById('progress');
+    var prev = document.getElementById('prev');
+    var next = document.getElementById('next');
+    var total = slides.length;
+    var current = 0;
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+
+    function fit() {
+      var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+      stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+    }
+
+    // Feedback loop (Validation -> Orchestrator) and DI -> Validation link,
+    // measured from layout so they stay attached to the boxes.
+    function drawLinks() {
+      var arch = document.getElementById('arch');
+      var svg = document.getElementById('links');
+      var box = function (id) {
+        var el = document.getElementById(id);
+        return { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight };
+      };
+      var O = box('n-orch'), D = box('n-di'), V = box('n-val');
+      var gx = D.x - 16;
+      var oy = O.y + O.h / 2;
+      var vy = V.y + V.h / 2;
+      var rx = D.x + D.w - 14;
+      var line = getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
+      var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+
+      svg.setAttribute('width', arch.offsetWidth);
+      svg.setAttribute('height', arch.offsetHeight);
+      svg.innerHTML =
+        '<defs>' +
+          '<marker id="ah-n" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L8 4L0 8z" fill="' + line + '"/></marker>' +
+          '<marker id="ah-a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L8 4L0 8z" fill="' + accent + '"/></marker>' +
+        '</defs>' +
+        '<path d="M' + V.x + ' ' + vy + ' H' + (gx + 8) + ' Q' + gx + ' ' + vy + ' ' + gx + ' ' + (vy - 8) +
+          ' V' + (oy + 8) + ' Q' + gx + ' ' + oy + ' ' + (gx + 8) + ' ' + oy + ' H' + (O.x - 1) + '"' +
+          ' fill="none" stroke="' + line + '" stroke-width="1.2" marker-end="url(#ah-n)"/>' +
+        '<text x="' + (gx - 9) + '" y="' + ((oy + vy) / 2) + '" transform="rotate(-90 ' + (gx - 9) + ' ' + ((oy + vy) / 2) + ')"' +
+          ' text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10.5" letter-spacing="1.5" fill="#7d889c">RETRY / RE-PLAN</text>' +
+        '<path d="M' + rx + ' ' + (D.y + D.h) + ' V' + (vy - 8) + ' Q' + rx + ' ' + vy + ' ' + (rx - 8) + ' ' + vy + ' H' + (V.x + V.w + 1) + '"' +
+          ' fill="none" stroke="' + accent + '" stroke-opacity=".75" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ah-a)"/>';
+    }
+
+    function go(i) {
+      current = Math.max(0, Math.min(total - 1, i));
+      slides.forEach(function (el, k) { el.classList.toggle('active', k === current); });
+      counter.innerHTML = '<b>' + pad(current + 1) + '</b> / ' + pad(total);
+      progress.style.width = ((current + 1) / total * 100) + '%';
+      prev.disabled = current === 0;
+      next.disabled = current === total - 1;
+      history.replaceState(null, '', '#' + (current + 1));
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(current + 1); }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
+      if (e.key === 'Home') go(0);
+      if (e.key === 'End') go(total - 1);
+    });
+    prev.addEventListener('click', function () { go(current - 1); });
+    next.addEventListener('click', function () { go(current + 1); });
+
+    var x0 = null;
+    document.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) go(current + (dx < 0 ? 1 : -1));
+      x0 = null;
+    });
+
+    window.addEventListener('resize', fit);
+    window.addEventListener('load', drawLinks);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLinks);
+    fit();
+    drawLinks();
+    go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { document.body.classList.remove('no-anim'); }); });
+  })();
+</script>
+</body>
+</html>
