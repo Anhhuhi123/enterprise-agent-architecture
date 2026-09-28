@@ -148,7 +148,10 @@
     color: var(--text);
   }
   .endpoint .i { color: var(--muted); }
-  .endpoint-wrap { display: flex; justify-content: center; }
+  .endpoint-wrap { display: flex; justify-content: center; align-items: center; gap: 10px; }
+  .ep-sub { font-size: 12px; font-weight: 400; color: var(--muted); padding-left: 4px; }
+  .endpoint.feedback { border-style: dashed; color: var(--text-2); font-size: 13px; }
+  .di-role { font-family: var(--sans); font-size: 12.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text-2); margin-left: 6px; }
   .endpoint.answer { border-color: #3b4a66; background: var(--surface-2); }
 
   .layer {
@@ -471,7 +474,7 @@
 
       <!-- User -->
       <div class="col-main endpoint-wrap" style="grid-row:1">
-        <div class="endpoint"><svg class="i"><use href="#i-user"/></svg>User</div>
+        <div class="endpoint"><svg class="i"><use href="#i-user"/></svg>User<span class="ep-sub">SSO identity · propagated end-to-end</span></div>
       </div>
       <div class="col-main arrow" style="grid-row:2"></div>
 
@@ -483,10 +486,11 @@
         </div>
         <div class="chips">
           <span class="chip">Intent Understanding</span>
-          <span class="chip">Planning / Reasoning</span>
+          <span class="chip">Planning</span>
           <span class="chip">Memory / State</span>
           <span class="chip">Tool Selection</span>
-          <span class="chip">Retry / Execution Control</span>
+          <span class="chip">Clarify / HITL</span>
+          <span class="chip">Retry · step &amp; cost budget</span>
         </div>
       </div>
       <div class="col-side note" style="grid-row:1 / 4; align-self:end">
@@ -498,7 +502,7 @@
       <!-- Domain Intelligence -->
       <div class="col-main di" id="n-di" style="grid-row:5">
         <div class="di-head">
-          <div class="di-name"><svg class="i"><use href="#i-layers"/></svg>Domain Intelligence</div>
+          <div class="di-name"><svg class="i"><use href="#i-layers"/></svg>Domain Intelligence<span class="di-role">Context plane · grounds intent, tool calls &amp; validation</span></div>
           <span class="tag">Potential differentiation layer</span>
         </div>
         <div class="di-grid">
@@ -508,9 +512,9 @@
               <span class="num">01</span>
             </div>
             <ul>
-              <li>Business Concepts</li>
+              <li>Business Concepts &amp; Glossary</li>
               <li>Entities &amp; Relationships</li>
-              <li>Domain Semantics</li>
+              <li>Synonyms · Domain Semantics</li>
             </ul>
           </div>
           <div class="di-card">
@@ -520,8 +524,8 @@
             </div>
             <ul>
               <li>Metrics / Dimensions</li>
-              <li>Business Definitions</li>
-              <li>Data Mapping</li>
+              <li>Business Definitions &amp; Calculations</li>
+              <li>Data Mapping · Row-level Security</li>
             </ul>
           </div>
           <div class="di-card">
@@ -530,69 +534,87 @@
               <span class="num">03</span>
             </div>
             <ul>
-              <li>Policies</li>
-              <li>Constraints</li>
-              <li>Deterministic Rules</li>
+              <li>Business Policies &amp; Constraints</li>
+              <li>Deterministic Rules · Decision Tables</li>
+              <li>Access Policies (who sees what)</li>
             </ul>
           </div>
         </div>
         <div class="di-onboard">
           <span class="ob-label">Domain Onboarding</span>
-          <span class="ob-src">Experts · Schemas · Docs · Domain packs</span>
+          <span class="ob-src">Experts · Schemas · Docs · Feedback</span>
           <span class="ob-arrow">→</span>
-          <span class="ob-src">Draft model</span>
+          <span class="ob-src">LLM draft</span>
           <span class="ob-arrow">→</span>
           <span class="ob-src">Expert review</span>
           <span class="ob-arrow">→</span>
-          <span class="ob-out">Version &amp; release · Git v1.2</span>
+          <span class="ob-src">Eval gate · golden Qs</span>
           <span class="ob-arrow">→</span>
-          <span class="ob-src">Active in agent · rollback-ready</span>
+          <span class="ob-out">Release · Git v1.2</span>
+          <span class="ob-arrow">→</span>
+          <span class="ob-src">Active · rollback-ready</span>
         </div>
       </div>
       <div class="col-side callout" style="grid-row:5">
         <div class="note-label">Potential differentiation</div>
-        <p>Encode enterprise domain knowledge and business semantics so agents operate on meaningful business concepts, not only raw data.</p>
+        <p>Ready-made domain packs, fast onboarding of new domains and client-specific eval data, so agents operate on business concepts, not raw data.</p>
       </div>
       <div class="col-main arrow accent" style="grid-row:6"></div>
 
-      <!-- Tool Layer -->
-      <div class="col-main layer muted" style="grid-row:7">
+      <!-- Pre-execution Gate -->
+      <div class="col-main layer muted" id="n-gate" style="grid-row:7">
         <div class="layer-title">
-          <div class="layer-name"><svg class="i"><use href="#i-api"/></svg>Tool Layer</div>
-          <div class="layer-role">Retrieve &amp; act</div>
+          <div class="layer-name"><svg class="i"><use href="#i-shield"/></svg>Pre-execution Gate</div>
+          <div class="layer-role">Before any query or action runs</div>
         </div>
         <div class="chips">
-          <span class="chip"><svg class="i"><use href="#i-db"/></svg>SQL / Database</span>
-          <span class="chip"><svg class="i"><use href="#i-book"/></svg>RAG / Knowledge Base</span>
-          <span class="chip"><svg class="i"><use href="#i-globe"/></svg>Web Search</span>
-          <span class="chip"><svg class="i"><use href="#i-api"/></svg>Enterprise APIs</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Query Validation · sqlglot</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Read-only · cost &amp; timeout limits</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>RLS / Doc ACL by user</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Write-action approval</span>
         </div>
       </div>
       <div class="col-main arrow" style="grid-row:8"></div>
 
-      <!-- Validation & Governance -->
-      <div class="col-main layer muted" id="n-val" style="grid-row:9">
+      <!-- Tool Layer -->
+      <div class="col-main layer muted" style="grid-row:9">
         <div class="layer-title">
-          <div class="layer-name"><svg class="i"><use href="#i-shield"/></svg>Validation &amp; Governance</div>
-          <div class="layer-role accent">Checked against domain rules</div>
+          <div class="layer-name"><svg class="i"><use href="#i-api"/></svg>Tool Layer</div>
+          <div class="layer-role">Retrieve &amp; act · user-scoped</div>
         </div>
         <div class="chips">
-          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Query / SQL Validation</span>
-          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Schema Validation</span>
-          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Business Rule Validation</span>
-          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Access Control</span>
-          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Guardrails</span>
+          <span class="chip"><svg class="i"><use href="#i-db"/></svg>Semantic Query API · no raw SQL</span>
+          <span class="chip"><svg class="i"><use href="#i-book"/></svg>RAG · ACL-filtered</span>
+          <span class="chip"><svg class="i"><use href="#i-globe"/></svg>Web Search</span>
+          <span class="chip"><svg class="i"><use href="#i-api"/></svg>Enterprise APIs · MCP</span>
         </div>
-      </div>
-      <div class="col-side note" style="grid-row:7 / 12">
-        <div class="note-label">Status · hypothesis</div>
-        <p>Domain Intelligence is the direction under exploration. Its value is to be validated on pilot business domains before it is positioned as the core differentiator.</p>
       </div>
       <div class="col-main arrow" style="grid-row:10"></div>
 
-      <!-- Business Answer -->
-      <div class="col-main endpoint-wrap" style="grid-row:11">
-        <div class="endpoint answer"><svg class="i"><use href="#i-answer"/></svg>Business Answer</div>
+      <!-- Answer Validation -->
+      <div class="col-main layer muted" id="n-val" style="grid-row:11">
+        <div class="layer-title">
+          <div class="layer-name"><svg class="i"><use href="#i-shield"/></svg>Answer Validation</div>
+          <div class="layer-role accent">Checked against domain rules</div>
+        </div>
+        <div class="chips">
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Business Rule Validation</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Result Sanity Checks</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Guardrails · PII · Injection</span>
+          <span class="chip"><svg class="i"><use href="#i-check"/></svg>Audit Log</span>
+        </div>
+      </div>
+      <div class="col-side note" style="grid-row:9 / 14">
+        <div class="note-label">Status · hypothesis</div>
+        <p>Domain Intelligence is the direction under exploration. Its value is to be validated on pilot business domains before it is positioned as the core differentiator.</p>
+      </div>
+      <div class="col-main arrow" style="grid-row:12"></div>
+
+      <!-- Business Answer + feedback -->
+      <div class="col-main endpoint-wrap" style="grid-row:13">
+        <div class="endpoint answer"><svg class="i"><use href="#i-answer"/></svg>Business Answer<span class="ep-sub">with provenance · metric defs · query · sources</span></div>
+        <span class="ob-arrow">→</span>
+        <div class="endpoint feedback">User feedback<span class="ep-sub">→ golden questions → Domain Onboarding</span></div>
       </div>
     </div>
 
@@ -600,7 +622,7 @@
       <div class="legend-item"><span class="sw"></span><span><b>Agent</b> = execution &amp; reasoning layer</span></div>
       <div class="legend-item"><span class="sw accent"></span><span><b>Domain Intelligence</b> = potential differentiation layer</span></div>
       <div class="legend-item"><span class="sw-line"></span><span>Retry / re-plan loop</span></div>
-      <div class="legend-item"><span class="sw-line accent"></span><span>Domain rules used in validation</span></div>
+      <div class="legend-item"><span class="sw-line accent"></span><span>Domain context: grounds intent · checks answers</span></div>
     </div>
   </section>
 
@@ -620,11 +642,14 @@
       <div class="band dim">
         <div class="band-label">
           <div class="band-idx">LAYER 01</div>
-          <div class="band-name">API Layer</div>
-          <div class="band-desc">How clients reach the agent</div>
+          <div class="band-name">Access &amp; API</div>
+          <div class="band-desc">How users &amp; clients reach the agent</div>
         </div>
-        <div class="cards" style="--n:1">
+        <div class="cards" style="--n:4">
+          <div class="card new"><div class="card-k">Chat UI / Channels</div><div class="card-v">Next.js web chat</div><div class="card-a">MS Teams · Slack · embeddable widget</div></div>
+          <div class="card new"><div class="card-k">Identity / SSO</div><div class="card-v">Keycloak</div><div class="card-a">Entra ID · Okta · OIDC</div></div>
           <div class="card"><div class="card-k">Backend API</div><div class="card-v">FastAPI</div><div class="card-a">REST · SSE streaming of agent responses</div></div>
+          <div class="card new"><div class="card-k">Audit Log</div><div class="card-v">PostgreSQL · append-only</div><div class="card-a">Who asked what · queries run · sources used</div></div>
         </div>
       </div>
 
@@ -636,10 +661,10 @@
           <div class="band-desc">Reasoning, planning &amp; execution control</div>
         </div>
         <div class="cards" style="--n:6">
-          <div class="card"><div class="card-k">LLM</div><div class="card-v">GPT · Claude · Gemini</div><div class="card-a">Open-source: Llama · Qwen</div></div>
+          <div class="card"><div class="card-k">LLM</div><div class="card-v">GPT · Claude · Gemini</div><div class="card-a">Self-hosted: Llama · Qwen on vLLM</div></div>
           <div class="card"><div class="card-k">LLM Gateway</div><div class="card-v">LiteLLM</div><div class="card-a">Routing · fallback · cost control</div></div>
-          <div class="card"><div class="card-k">Orchestration</div><div class="card-v">LangGraph · LangChain</div><div class="card-a">Stateful graphs · model, tool &amp; retriever integrations</div></div>
-          <div class="card"><div class="card-k">Tool Calling &amp; Structured Output</div><div class="card-v">LangChain · Pydantic</div><div class="card-a">Function calling · JSON schema</div></div>
+          <div class="card"><div class="card-k">Orchestration</div><div class="card-v">LangGraph · LangChain</div><div class="card-a">HITL interrupts · step &amp; cost limits</div></div>
+          <div class="card"><div class="card-k">Tool Calling &amp; Protocol</div><div class="card-v">Pydantic · MCP</div><div class="card-a">Tools exposed as MCP servers</div></div>
           <div class="card"><div class="card-k">Embedding &amp; Rerank</div><div class="card-v">BGE-M3 · OpenAI</div><div class="card-a">Cohere Rerank · BGE Reranker</div></div>
           <div class="card"><div class="card-k">Agent State / Memory</div><div class="card-v">Redis · PostgreSQL</div><div class="card-a">Short-term · checkpoints &amp; long-term</div></div>
         </div>
@@ -652,16 +677,16 @@
           <div class="band-name">Domain Intelligence</div>
           <div class="band-desc">Enterprise knowledge &amp; business semantics the agent reasons over</div>
         </div>
-        <div class="cards" style="--n:6">
+        <div class="cards" style="--n:7">
           <div class="card key">
             <div class="card-k">Ontology</div>
-            <div class="card-v">Domain Ontology / Business Model</div>
-            <div class="card-s">Domain concepts, entities, relationships &amp; semantics</div>
+            <div class="card-v">YAML in Git</div>
+            <div class="card-a">Entities · glossary · synonyms. Neo4j if needed</div>
           </div>
-          <div class="card">
+          <div class="card key">
             <div class="card-k">Semantic Layer</div>
-            <div class="card-v">Cube.dev</div>
-            <div class="card-a">dbt Semantic Layer</div>
+            <div class="card-v">Cube</div>
+            <div class="card-a">RLS · caching · dbt SL alt.</div>
           </div>
           <div class="card">
             <div class="card-k">Schema Registry / Catalog</div>
@@ -669,19 +694,24 @@
             <div class="card-a">OpenMetadata</div>
           </div>
           <div class="card">
-            <div class="card-k">Business Rules / Policy</div>
+            <div class="card-k">Business Rules</div>
+            <div class="card-v">Metric defs</div>
+            <div class="card-a">GoRules Zen · Drools</div>
+          </div>
+          <div class="card">
+            <div class="card-k">Access Policy</div>
             <div class="card-v">OPA</div>
-            <div class="card-a">Open Policy Agent · decision tables</div>
+            <div class="card-a">Enforced via RLS · doc ACL</div>
           </div>
           <div class="card">
             <div class="card-k">Guardrails &amp; Validation</div>
-            <div class="card-v">sqlglot · NeMo Guardrails</div>
-            <div class="card-a">Guardrails AI</div>
+            <div class="card-v">sqlglot · NeMo</div>
+            <div class="card-a">Presidio PII · injection filter</div>
           </div>
           <div class="card new">
             <div class="card-k">Domain Onboarding</div>
-            <div class="card-v">Git-versioned domain model</div>
-            <div class="card-a">Expert review &amp; approval workflow</div>
+            <div class="card-v">Git domain model</div>
+            <div class="card-a">Expert UI · eval gate</div>
           </div>
         </div>
       </div>
@@ -693,11 +723,12 @@
           <div class="band-name">Data &amp; Knowledge</div>
           <div class="band-desc">Structured, vector &amp; document sources</div>
         </div>
-        <div class="cards" style="--n:5">
-          <div class="card"><div class="card-k">Analytics</div><div class="card-v">ClickHouse</div><div class="card-a">Columnar OLAP</div></div>
+        <div class="cards" style="--n:6">
+          <div class="card"><div class="card-k">Client Warehouses</div><div class="card-v">Connectors</div><div class="card-a">Snowflake · BigQuery · ClickHouse</div></div>
           <div class="card"><div class="card-k">Relational</div><div class="card-v">PostgreSQL</div><div class="card-a">App data · metadata</div></div>
-          <div class="card"><div class="card-k">Vector Database</div><div class="card-v">Qdrant · Pinecone</div><div class="card-a">Self-hosted vs managed · pgvector at small scale</div></div>
-          <div class="card"><div class="card-k">Documents</div><div class="card-v">S3 · Docling</div><div class="card-a">Unstructured · parsing, chunking, OCR</div></div>
+          <div class="card"><div class="card-k">Vector / Hybrid</div><div class="card-v">Qdrant</div><div class="card-a">Dense + BM25 · pgvector small</div></div>
+          <div class="card"><div class="card-k">Documents</div><div class="card-v">S3 · Docling</div><div class="card-a">Parse · OCR · per-doc ACL</div></div>
+          <div class="card new"><div class="card-k">Query Assets</div><div class="card-v">Golden queries</div><div class="card-a">Few-shot · result cache</div></div>
           <div class="card"><div class="card-k">Enterprise Integration</div><div class="card-v">Enterprise APIs</div><div class="card-a">Airbyte · dbt · Airflow pipelines</div></div>
         </div>
       </div>
@@ -709,11 +740,11 @@
           <div class="band-name">Infrastructure / Observability</div>
         </div>
         <div class="cards" style="--n:7">
-          <div class="card"><div class="card-k">Runtime</div><div class="card-v">Docker</div><div class="card-a">AWS ECS</div></div>
-          <div class="card"><div class="card-k">Cache / Queue</div><div class="card-v">Redis</div><div class="card-a">Kafka / SQS</div></div>
+          <div class="card"><div class="card-k">Runtime</div><div class="card-v">Docker · Kubernetes</div><div class="card-a">EKS · Helm for on-prem</div></div>
+          <div class="card"><div class="card-k">Cache / Jobs</div><div class="card-v">Redis</div><div class="card-a">Celery / Temporal</div></div>
           <div class="card"><div class="card-k">LLM Tracing</div><div class="card-v">Langfuse</div><div class="card-a">LangSmith</div></div>
-          <div class="card"><div class="card-k">Evaluation Framework</div><div class="card-v">Ragas · DeepEval</div><div class="card-a">Promptfoo</div></div>
-          <div class="card new"><div class="card-k">Evaluation Data</div><div class="card-v">Custom client datasets</div><div class="card-a">Full conversations scored vs client-expected outcomes</div></div>
+          <div class="card"><div class="card-k">Evaluation Framework</div><div class="card-v">Ragas · DeepEval</div><div class="card-a">Promptfoo · CI gate</div></div>
+          <div class="card new"><div class="card-k">Evaluation Data</div><div class="card-v">Client datasets</div><div class="card-a">Golden Qs + user feedback</div></div>
           <div class="card"><div class="card-k">Monitoring</div><div class="card-v">OpenTelemetry</div><div class="card-a">Prometheus · Grafana</div></div>
           <div class="card"><div class="card-k">CI/CD &amp; IaC</div><div class="card-v">GitHub Actions</div><div class="card-a">ArgoCD · Terraform · Vault</div></div>
         </div>
@@ -754,7 +785,7 @@
       stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
     }
 
-    // Feedback loop (Validation -> Orchestrator) and DI -> Validation link,
+    // Feedback loop (Validation -> Orchestrator), DI -> Validation and DI -> Orchestrator links,
     // measured from layout so they stay attached to the boxes.
     function drawLinks() {
       var arch = document.getElementById('arch');
@@ -768,6 +799,7 @@
       var oy = O.y + O.h / 2;
       var vy = V.y + V.h / 2;
       var rx = D.x + D.w - 14;
+      var gr = D.x + D.w + 16;
       var line = getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
       var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
 
@@ -784,6 +816,9 @@
         '<text x="' + (gx - 9) + '" y="' + ((oy + vy) / 2) + '" transform="rotate(-90 ' + (gx - 9) + ' ' + ((oy + vy) / 2) + ')"' +
           ' text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10.5" letter-spacing="1.5" fill="#7d889c">RETRY / RE-PLAN</text>' +
         '<path d="M' + rx + ' ' + (D.y + D.h) + ' V' + (vy - 8) + ' Q' + rx + ' ' + vy + ' ' + (rx - 8) + ' ' + vy + ' H' + (V.x + V.w + 1) + '"' +
+          ' fill="none" stroke="' + accent + '" stroke-opacity=".75" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ah-a)"/>' +
+        '<path d="M' + (D.x + D.w) + ' ' + (D.y + 28) + ' H' + (gr - 8) + ' Q' + gr + ' ' + (D.y + 28) + ' ' + gr + ' ' + (D.y + 20) +
+          ' V' + (oy + 8) + ' Q' + gr + ' ' + oy + ' ' + (gr - 8) + ' ' + oy + ' H' + (O.x + O.w + 1) + '"' +
           ' fill="none" stroke="' + accent + '" stroke-opacity=".75" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ah-a)"/>';
     }
 
