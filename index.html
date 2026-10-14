@@ -119,6 +119,37 @@
   .lib li code { font: 500 12.5px 'JetBrains Mono', monospace; color: var(--ink); }
   .lib.wide { grid-column: span 2; }
 
+  /* ---------- eval ---------- */
+  .evalwrap { display: flex; gap: 40px; align-items: flex-start; margin-top: 18px; }
+  .evt { border-collapse: collapse; width: 960px; background: var(--card); border: 1.5px solid var(--border); }
+  .evt th, .evt td { text-align: left; padding: 12px 14px; font-size: 17px; border-bottom: 1px solid var(--border); }
+  .evt th { font: 600 13px 'JetBrains Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); background: var(--bg-alt); }
+  .evt td:nth-child(n+2) { font-family: 'JetBrains Mono', monospace; font-size: 17px; }
+  .evt td:last-child { color: var(--llm); font-weight: 500; }
+  .evt tr:last-child td { border-bottom: none; }
+  .evnotes { flex: 1; }
+  .evnotes h4 { font: 700 18px 'Space Grotesk', Arial, sans-serif; margin: 6px 0 10px; }
+  .evnotes ul { margin: 0 0 22px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .evnotes li { font-size: 16px; line-height: 1.45; color: #3D4856; }
+  .evnotes code { font: 500 14px 'JetBrains Mono', monospace; }
+
+  .evt.tune { width: 100%; margin-top: 6px; }
+  .tunehead { font: 600 15px 'IBM Plex Sans', sans-serif; margin-top: 16px; color: var(--ink); }
+  .tunedef { list-style: none; margin: 4px 0 2px; display: flex; flex-direction: column; gap: 1px; }
+  .tunedef li { font-size: 14px; line-height: 1.35; color: #3D4856; }
+  .tunedef li b { display: inline-block; width: 28px; font-family: 'JetBrains Mono', monospace; color: var(--ink); }
+  .tunedef code { font: 500 12.5px 'JetBrains Mono', monospace; }
+  .tunehead code { font: 500 13px 'JetBrains Mono', monospace; }
+  .evalwrap .evt { width: 100%; }
+  .evalwrap .evt th, .evalwrap .evt td { padding: 7px 14px; font-size: 16px; }
+  .evt.tune th, .evt.tune td { padding: 6px 14px; font-size: 15px; }
+  .evt.tune2 { margin-top: 14px; }
+  .evt.tune2 td:last-child { color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; font-size: 14px; }
+  .evt.tune td:last-child { color: var(--llm); font-weight: 500; }
+  .evt.tune1 td:last-child { color: inherit; font-weight: 400; }
+  .evt.tune1 td:nth-child(5) { color: var(--llm); font-weight: 500; }
+  .evt.tune td:first-child { font-family: 'IBM Plex Sans', sans-serif; }
+
   /* ---------- pain points ---------- */
   .slide.pain { background: var(--bg-alt); }
   .pptable { display: flex; flex-direction: column; height: 690px; justify-content: center; }
@@ -133,6 +164,45 @@
   .sev.high { background: #F9DCCB; color: #8A3A0E; }
   .sev.med { background: #E3E9F6; color: #24479A; }
   .sev.low { background: #E8E7E2; color: #4A5260; }
+
+  /* ---------- routing ---------- */
+  .mflow { display: flex; align-items: stretch; gap: 8px; margin-top: 10px; }
+  .mstep { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; line-height: 1.4; color: #3D4856; }
+  .mstep b { display: block; font: 700 16px 'Space Grotesk', Arial, sans-serif; color: var(--ink); margin-bottom: 4px; }
+  .mstep.llm { border-color: var(--llm); } .mstep.code { border-color: var(--code); }
+  .mstep.pick { border-color: var(--user); border-width: 2.5px; }
+  .marrow { align-self: center; font-size: 22px; color: var(--muted); }
+  .rcol h4 .who { font: 600 13px 'JetBrains Mono', monospace; padding: 3px 9px; border-radius: 6px; margin-right: 8px; color: #fff; }
+  .rcol h4 .who.user { background: var(--user); } .rcol h4 .who.code { background: var(--code); }
+  .mlist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .mlist li { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; font-size: 16px; line-height: 1.4; color: #3D4856; }
+  .mlist li b { color: var(--ink); }
+  .rwrap { display: flex; gap: 36px; align-items: flex-start; margin-top: 16px; }
+  .rcol { flex: 1; min-width: 0; }
+  .rcol h4 { font: 700 18px 'Space Grotesk', Arial, sans-serif; margin: 0 0 10px; }
+  .rcol .evt { width: 100%; }
+  .rcol .evt th, .rcol .evt td { padding: 13px 14px; font-size: 16.5px; }
+  .rcol .evt td:nth-child(n+2), .rcol .evt td:last-child { font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; color: #3D4856; }
+  .rcol .evt td.who { font: 600 13px 'JetBrains Mono', monospace; white-space: nowrap; }
+  .rcol .evt td.who.llm { color: var(--llm); } .rcol .evt td.who.code { color: var(--code); } .rcol .evt td.who.user { color: var(--user); }
+  .rules { list-style: none; counter-reset: r; display: flex; flex-direction: column; gap: 9px; }
+  .rules li { counter-increment: r; position: relative; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px 14px 52px; font-size: 16.5px; line-height: 1.4; color: #3D4856; }
+  .rules li::before { content: counter(r); position: absolute; left: 16px; top: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--code); color: #fff; font: 600 13px 'JetBrains Mono', monospace; display: flex; align-items: center; justify-content: center; }
+  .rules li b { color: var(--ink); }
+  .rules li code, .rcol code, .strip code { font: 500 13px 'JetBrains Mono', monospace; color: var(--ink); }
+  .callout { margin-top: 14px; border-left: 4px solid var(--user); background: var(--user-fill); border-radius: 0 10px 10px 0; padding: 10px 14px; font-size: 15px; line-height: 1.4; color: #2B3A33; }
+  .strip { display: flex; gap: 14px; margin-top: 16px; }
+  .strip > div { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 14px; font-size: 14.5px; line-height: 1.4; color: #3D4856; }
+  .strip b { display: block; font: 700 15px 'Space Grotesk', Arial, sans-serif; color: var(--ink); margin-bottom: 3px; }
+  .vtypes td.type { font: 700 20px 'Space Grotesk', Arial, sans-serif; white-space: nowrap; }
+  .vtypes td.type small { display: block; font: 400 12.5px 'IBM Plex Sans', sans-serif; color: var(--muted); }
+  .vtypes.evt td.pro { border-left: 3px solid var(--user); }
+  .vtypes.evt td.con { border-left: 3px solid var(--code); }
+  .vtypes.evt { width: 100%; margin-top: 4px; }
+  .vtypes.evt th, .vtypes.evt td { padding: 11px 14px; font-size: 15px; vertical-align: top; }
+  .vtypes.evt td:nth-child(n+2), .vtypes.evt td:last-child { font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; color: #3D4856; font-size: 15px; }
+  .pill { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 1px 9px; border-radius: 10px; white-space: nowrap; }
+  .pill.on { background: var(--user-fill); color: #1F5C3A; } .pill.off { background: #E8E7E2; color: #4A5260; } .pill.part { background: var(--code-fill); color: #7A430F; }
 
   @media print {
     html, body { background: #fff; overflow: visible; height: auto; }
@@ -152,13 +222,14 @@
 <section class="slide cover">
   <div class="eyebrow">Storyboard Studio · Backend AI layer</div>
   <h1>AI Orchestration Layer</h1>
-  <p class="lead">Three agents on two orchestrators: one shared LangGraph graph for Script and Image, a single planner loop for Quick Video. Plus the stack it runs on and the pain points found in real use.</p>
+  <p class="lead">Three agents on two orchestrators: one plan-and-execute agent with replan for Script and Image (the LLM plans once, code runs and checks, replan only on problems), a single planner loop for Quick Video. Plus the stack, the eval behind the switch, and the pain points found in real use.</p>
   <div class="chips">
     <span>1 · Script agent</span>
     <span>2 · Image agent</span>
     <span>3 · Quick Video agent</span>
     <span>4 · Tech stack</span>
-    <span>5 · Pain points</span>
+    <span>5 · Graph vs agent eval &amp; tuning</span>
+    <span>6 · Pain points</span>
   </div>
   <div class="date">October 2026</div>
 </section>
@@ -166,28 +237,28 @@
 <!-- ===================== 1. SCRIPT AGENT ===================== -->
 <section class="slide">
   <div class="head">
-    <div class="eyebrow">Agent 1 · Script — LangGraph orchestrator</div>
-    <h2 class="title">The LLM writes each step, the orchestrator decides the route</h2>
-    <p class="subtitle">One chat turn = one background job. Drafts film script, episode outline, episode script, scene prompts and keyframes.</p>
+    <div class="eyebrow">Agent 1 · Script — plan-and-execute with replan</div>
+    <h2 class="title">Plan once, run in code, replan only when a step is blocked or a draft fails</h2>
+    <p class="subtitle">One chat turn = one background job. Drafts film script, episode outline, episode script, scene prompts and keyframes. The old fixed graph stays as a fallback.</p>
   </div>
   <div class="diagram" data-diagram="script"></div>
   <div class="foot">
     <div class="legend">
       <span><i class="sw llm"></i>LLM call</span>
       <span><i class="sw code"></i>Code</span>
-      <span><i class="sw dec"></i>Decision in code</span>
+      <span><i class="sw dec"></i>Checks in code</span>
       <span><i class="sw io"></i>Input / output</span>
     </div>
     <div class="sep"></div>
-    <div>LLM calls per turn: <b>k + 3</b> when writing k steps · <b>2</b> for Q&amp;A or clarify</div>
+    <div>LLM calls per turn: Q&amp;A <b>1</b> · ask back <b>1</b> · k tools <b>k + 2</b> · each fix round <b>+2</b> · caps: 2 fix rounds, 3 replans, 15 calls, $0.05, 120 s</div>
   </div>
 </section>
 
 <!-- ===================== 2. IMAGE AGENT ===================== -->
 <section class="slide">
   <div class="head">
-    <div class="eyebrow">Agent 2 · Image — same LangGraph orchestrator</div>
-    <h2 class="title">Same orchestrator graph, different tools: this agent drafts the visual cards</h2>
+    <div class="eyebrow">Agent 2 · Image — same plan-and-execute agent</div>
+    <h2 class="title">Same agent, different tools: this agent drafts the visual cards</h2>
     <p class="subtitle">Separate chat thread per project. Drafts the style, character cards and location cards; images are generated only when the user clicks.</p>
   </div>
   <div class="diagram" data-diagram="image"></div>
@@ -195,7 +266,7 @@
     <div class="legend">
       <span><i class="sw llm"></i>LLM call</span>
       <span><i class="sw code"></i>Code</span>
-      <span><i class="sw dec"></i>Decision in code</span>
+      <span><i class="sw dec"></i>Checks in code</span>
       <span><i class="sw io"></i>Input / output</span>
       <span><i class="sw user"></i>User action</span>
       <span><i class="sw job"></i>Background job</span>
@@ -262,9 +333,9 @@
       <div class="lib">
         <h4><i style="background:var(--llm)"></i>Agent / orchestration</h4>
         <ul>
-          <li><code>langgraph</code> state graph</li>
+          <li><code>langgraph</code>: plan-and-execute agent with replan (fixed graph as fallback)</li>
           <li><code>langgraph-checkpoint-postgres</code> chat memory</li>
-          <li><code>langchain-core</code> chat model, tool, prompt interfaces only</li>
+          <li><code>langchain-core</code> interfaces · Langfuse tracing (dev)</li>
         </ul>
       </div>
       <div class="lib">
@@ -300,7 +371,7 @@
       <div class="lib wide">
         <h4><i style="background:#4A5566"></i>Build &amp; quality</h4>
         <ul>
-          <li>uv + <code>uv.lock</code> · Docker image <code>python:3.12-slim</code> with dev / prod targets · pytest + pytest-asyncio (fake providers only) · ruff</li>
+          <li>uv + <code>uv.lock</code> · Docker image <code>python:3.12-slim</code> with dev / prod targets · pytest + pytest-asyncio (fake providers only) · ruff · eval suite: 10 cases, LLM judge, real model on demand</li>
         </ul>
       </div>
     </div>
@@ -310,7 +381,112 @@
   </div>
 </section>
 
-<!-- ===================== 5. PAIN POINTS ===================== -->
+<!-- ===================== 5. EVAL ===================== -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Fixed graph vs plan-and-execute agent · eval</div>
+    <h2 class="title">Plan + replan beats the fixed graph on quality with fewer LLM calls</h2>
+    <p class="subtitle">3 runs per case, gpt-6-luna runs and judges (2026-10-13). #1 right tool call (code) · #2 meets the request · #3 usable by a director (LLM judge).</p>
+  </div>
+  <div class="evalwrap">
+    <table class="evt">
+      <thead><tr><th>Total</th><th>Fixed graph</th><th>ReAct agent</th><th>Plan + replan</th><th>+ light reasoning (D)</th></tr></thead>
+      <tbody>
+        <tr><td>Runs</td><td>10 × 3</td><td>10 × 3</td><td>11 × 3</td><td>11 × 3</td></tr>
+        <tr><td>#1 Right tool call</td><td>80%</td><td>73%</td><td>88%</td><td>91%</td></tr>
+        <tr><td>#2 Meets the request</td><td>60%</td><td>58%</td><td>71%</td><td>67%</td></tr>
+        <tr><td>#3 Usable by a director</td><td>58%</td><td>51%</td><td>66%</td><td>70%</td></tr>
+        <tr><td>LLM calls per run</td><td>3.2</td><td>2.4</td><td>2.5</td><td>2.6</td></tr>
+        <tr><td>Tool calls (drafts made)</td><td>15</td><td>15</td><td>23</td><td>25</td></tr>
+        <tr><td>Cost (assistant only)</td><td>$0.0443</td><td>$0.0336</td><td>$0.0519</td><td>$0.0512</td></tr>
+        <tr><td>Planner time p50</td><td>—</td><td>—</td><td>10.0 s</td><td>6.6 s</td></tr>
+        <tr><td>Hit the cap · errors</td><td>— · 0</td><td>0 · 0</td><td>0 · 0</td><td>0 · 0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3 class="tunehead">Tuning reasoning per node · 11 cases × 3 runs, gpt-6-luna</h3>
+  <ul class="tunedef">
+    <li><b>A</b> no reasoning setting (baseline)</li>
+    <li><b>B</b> planner, replanner, respond, clarify at <code>low</code></li>
+    <li><b>C</b> B + drafting tools at <code>low</code></li>
+    <li><b>D</b> B + compact responder (default)</li>
+    <li><b>E1</b> only the planner at <code>low</code> (round 2)</li>
+  </ul>
+  <table class="evt tune tune1">
+    <thead><tr><th></th><th>A · baseline</th><th>B · light coordination</th><th>C · B + light tools</th><th>D · B + compact respond</th><th>E1 · only planner at low</th></tr></thead>
+    <tbody>
+      <tr><td>#1 / #2 / #3 quality</td><td>91 / 69 / 70</td><td>88 / 66 / 64</td><td>91 / 64 / 69</td><td>91 / 67 / 70</td><td>97 / 74 / 67</td></tr>
+      <tr><td>Assistant cost</td><td>$0.0607</td><td>$0.0508 (−16%)</td><td>$0.0474 (−22%)</td><td>$0.0512 (−16%)</td><td>$0.0590</td></tr>
+      <tr><td>Time per turn (median)</td><td>22.9 s</td><td>17.1 s (−25%)</td><td>20.3 s (−11%)</td><td>20.4 s (−11%)</td><td>25.3 s</td></tr>
+      <tr><td>Planner (median per call)</td><td>10.0 s</td><td>7.4 s (−27%)</td><td>8.1 s</td><td>6.6 s (−34%)</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <div class="foot">
+    <div>Source: <code>apps/api/evals/assistant/reports/compare-graph-vs-agent-plan.md</code> (jobs 463, 462, 465, 469) · tuning: <code>reports/tuning-2026-10-13-005.md</code> · D rerun 91 / 63 / 66 vs D 91 / 67 / 70: noise · D1 (shared prompt prefix): no cache gain · E1 is round 2: vs D rerun +9% cost, +29% time</div>
+  </div>
+</section>
+
+<!-- ===================== 7. ROUTING ===================== -->
+<section class="slide">
+  <div class="head" style="height:104px">
+    <div class="eyebrow warm">Video model · where it plugs into the agent · design under exploration, not built yet</div>
+    <h2 class="title">The video model is chosen between the scene description and the prompt, by the user or by code</h2>
+  </div>
+  <div class="rwrap">
+    <div class="rcol">
+      <h4><span class="who user">USER</span> Configures the model</h4>
+      <ul class="mlist">
+        <li><b>Where:</b> on the board, per scene, or one default per episode (today).</li>
+        <li><b>What:</b> the API type (<code>T2V</code>, <code>I2V</code>, <code>R2V</code>, <code>V2V</code>) and the model.</li>
+        <li><b>Checked by:</b> the capability table, so the user cannot pick a type or an image count the model does not support.</li>
+        <li><b>Wins over auto:</b> a forced choice is never overwritten by the router.</li>
+        <li><b>V2V</b> is only here: it needs an existing video, so it runs when the user asks to edit a scene (<code>edit_of: scene N</code>) and code makes a new take.</li>
+      </ul>
+    </div>
+    <div class="rcol">
+      <h4><span class="who code">AUTO</span> Code picks the fitting model</h4>
+      <ol class="rules">
+        <li><b>No character:</b> composition must match and a background exists → <code>I2V</code>, else <code>T2V</code>.</li>
+        <li><b>Character + exact composition:</b> keyframe exists → <code>I2V start-end</code>, else <code>R2V</code>.</li>
+        <li><b>Character, continuous with the previous scene:</b> <code>R2V</code> + last frame of the previous scene.</li>
+        <li><b>Everything else:</b> <code>R2V</code>.</li>
+        <li><b>Model:</b> filter by the capability table, then by the episode quality level; none left → downgrade <code>I2V start-end</code> → <code>I2V</code> → <code>R2V</code>.</li>
+      </ol>
+      <div class="callout">Deterministic: the same facts always give the same choice, and the reason is shown on the board so the user can override.</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Source: <code>docs/10-model-routing.md</code> §3, §5 (exploring, no proposal yet) · related: PP-012 · most platforms (Vidu, Flow) and every API make the user / caller pick the mode explicitly</div>
+  </div>
+</section>
+
+<!-- ===================== 8. VIDEO API TYPES ===================== -->
+<section class="slide">
+  <div class="head" style="height:104px">
+    <div class="eyebrow warm">Video API types · T2V, I2V, R2V, V2V</div>
+    <h2 class="title">Four ways to call a video model: the output is always a video, the inputs differ</h2>
+    <p class="subtitle">Pros and cons are still hypotheses, to be tested by a dev on the web UI before any of it becomes a routing rule.</p>
+  </div>
+  <table class="evt vtypes">
+    <thead><tr><th>Type</th><th>Input</th><th>Pros</th><th>Cons</th><th>In the app today</th></tr></thead>
+    <tbody>
+      <tr><td class="type">T2V<small>text to video</small></td><td>Prompt only</td><td class="pro">Needs only a prompt: no image to prepare first</td><td class="con">Nothing anchors the face or the composition</td><td><span class="pill off">Not used</span></td></tr>
+      <tr><td class="type">I2V<small>image to video · start / start-end</small></td><td>Prompt + start image (+ end image)</td><td class="pro">Composition and setting match the start (and end) image; Keyframe mode already has these frames</td><td class="con">Needs the image to exist first; the prompt must not contradict it</td><td><span class="pill part">Only <code>sheet_cut</code> with first frame (<code>img2video</code>)</span></td></tr>
+      <tr><td class="type">R2V<small>reference to video</small></td><td>Prompt + subject images (characters, background)</td><td class="pro">Keeps a character's face across many scenes, from the character card images</td><td class="con">Does not lock the composition; needs <code>@Name</code> and <code>@background</code> in the prompt</td><td><span class="pill on">Default for almost every scene (<code>reference2video</code>)</span></td></tr>
+      <tr><td class="type">V2V<small>video to video</small></td><td>Prompt + source video</td><td class="pro">Edits or restyles an existing video without redoing the whole scene</td><td class="con">Needs a source video, so it cannot be chosen at planning time</td><td><span class="pill off">Not used (planned for the post-production tab)</span></td></tr>
+    </tbody>
+  </table>
+  <div class="strip">
+    <div><b>Two shared currencies: image and video</b>Each carries a role: <code>start_frame</code>, <code>end_frame</code>, <code>subject:&lt;name&gt;</code>, <code>background</code>, <code>source_video</code>. A last frame of T2V can feed I2V; an I2V output can be an R2V subject.</div>
+    <div><b>Prompt is written after the type is chosen</b>Each type needs a different prompt style. Changing type or model after a prompt exists marks it <code>stale</code> and the agent rewrites it.</div>
+    <div><b>Open questions</b>Does one Vidu call accept a start image and subjects together? How do T2V / I2V compare with R2V on the same scene? Who picks the model: user, a fixed quality level, or both?</div>
+  </div>
+  <div class="foot">
+    <div>Source: <code>docs/10-model-routing.md</code> §1, §2, §4, §9 · code: <code>services/video.py::to_vidu_request</code>, <code>vidu_endpoint</code></div>
+  </div>
+</section>
+
+<!-- ===================== 9. PAIN POINTS ===================== -->
 <section class="slide pain">
   <div class="head" style="height:100px">
     <div class="eyebrow warm">Pain points</div>
@@ -335,7 +511,7 @@
 
 <div class="nav">
   <button id="prev" aria-label="Previous slide">←</button>
-  <span id="count">1 / 6</span>
+  <span id="count">1 / 10</span>
   <button id="next" aria-label="Next slide">→</button>
 </div>
 
@@ -343,49 +519,50 @@
 /* ============ Diagram data (coordinates in px inside each diagram) ============ */
 const SHARED_GRAPH = [
   { id: 'in', type: 'io', x: 0, y: 205, w: 150, h: 110, title: 'User message', sub: '+ board of the current episode' },
-  { id: 'prepare', type: 'code', n: '01', x: 195, y: 212, w: 150, h: 96, title: 'Prepare', sub: 'load history; summarize old turns' },
-  { id: 'understand', type: 'llm', n: '02', x: 380, y: 212, w: 155, h: 96, title: 'Understand', sub: 'intent, level, what is already decided' },
-  { id: 'route', type: 'decision', x: 570, y: 200, w: 150, h: 120, title: 'Route', sub: 'intent + brief check' },
-  { id: 'clarify', type: 'llm', n: '03a', x: 568, y: 36, w: 155, h: 96, title: 'Clarify', sub: 'questions with suggested answers' },
-  { id: 'endc', type: 'io', x: 785, y: 46, w: 150, h: 76, title: 'Turn ends', sub: 'questions, no drafts' },
-  { id: 'plan', type: 'llm', n: '03b', x: 800, y: 212, w: 155, h: 96, title: 'Plan', sub: 'steps: tool, target, instructions' },
-  { id: 'execute', type: 'llm', tag: 'LLM × k', n: '04', x: 985, y: 212, w: 155, h: 96, title: 'Execute', sub: 'one drafting tool per step' },
-  { id: 'validate', type: 'code', n: '05', x: 1170, y: 212, w: 155, h: 96, title: 'Validate', sub: 'rule checks against the board' },
-  { id: 'respond', type: 'llm', n: '06', x: 1170, y: 410, w: 155, h: 96, title: 'Respond', sub: 'summary + next questions' },
-  { id: 'out', type: 'io', x: 1380, y: 400, w: 140, h: 116, title: 'Reply + drafts', sub: 'user fills the form, saves' },
+  { id: 'prepare', type: 'code', n: '01', x: 192, y: 212, w: 140, h: 96, title: 'Prepare', sub: 'history; summarize old turns' },
+  { id: 'planner', type: 'llm', n: '02', x: 362, y: 212, w: 160, h: 96, title: 'Planner', sub: 'one call: route, steps, brief' },
+  { id: 'route', type: 'decision', x: 552, y: 195, w: 150, h: 130, title: 'Route', sub: 'brief check in code' },
+  { id: 'answer', type: 'io', x: 552, y: 30, w: 150, h: 84, title: 'Answer', sub: 'planner replies · 1 call' },
+  { id: 'ask', type: 'io', x: 552, y: 410, w: 150, h: 84, title: 'Ask back', sub: 'questions + suggested answers' },
+  { id: 'orch', type: 'code', tag: 'CODE + LLM × k', n: '03', x: 737, y: 212, w: 175, h: 96, title: 'Executor', sub: 'guard each step; same tier in parallel' },
+  { id: 'val', type: 'decision', x: 945, y: 195, w: 150, h: 130, title: 'Validator', sub: 'check_all (code)' },
+  { id: 'resp', type: 'llm', n: '05', x: 1130, y: 212, w: 150, h: 96, title: 'Respond', sub: 'reply + next questions' },
+  { id: 'replan', type: 'llm', n: '04', x: 945, y: 410, w: 150, h: 96, title: 'Replanner', sub: 'run · ask_user · finish' },
+  { id: 'stop', type: 'io', x: 1130, y: 30, w: 150, h: 84, title: 'Stop (cap)', sub: 'partial result + warning, no LLM' },
+  { id: 'guards', type: 'code', x: 192, y: 368, w: 330, h: 160, title: 'Guards (code)', sub: 'Brief both ways: ask only if the top level misses info, draft if it is complete · current episode only · keyframes need scenes · pipeline gate: never draft what cannot be saved yet · no repeat draft except fixes' },
+  { id: 'out', type: 'io', x: 1350, y: 205, w: 165, h: 110, title: 'Reply + drafts', sub: 'user fills the form, saves' },
 ];
 const SHARED_EDGES = [
   { f: 'in', fs: 'r', t: 'prepare', ts: 'l' },
-  { f: 'prepare', fs: 'r', t: 'understand', ts: 'l' },
-  { f: 'understand', fs: 'r', t: 'route', ts: 'l' },
-  { f: 'route', fs: 't', t: 'clarify', ts: 'b', label: 'brief missing', lp: [645, 166] },
-  { f: 'clarify', fs: 'r', t: 'endc', ts: 'l' },
-  { f: 'route', fs: 'r', t: 'plan', ts: 'l', label: 'brief OK', lp: [760, 238] },
-  { f: 'route', fs: 'b', t: 'respond', ts: 'l', via: [[645, 458]], label: 'Q&A only', lp: [645, 390] },
-  { f: 'plan', fs: 'b', t: 'respond', ts: 'l', via: [[877, 458]], label: '0 steps', lp: [877, 383] },
-  { f: 'plan', fs: 'r', t: 'execute', ts: 'l' },
-  { f: 'execute', fs: 'r', t: 'validate', ts: 'l' },
-  { f: 'validate', fs: 't', t: 'execute', ts: 't', via: [[1247, 168], [1062, 168]], dash: true, loop: true, label: 'hard errors → fix notes, max 2 rounds', lp: [1155, 168] },
-  { f: 'validate', fs: 'b', t: 'respond', ts: 't', label: 'pass, or leftovers → warnings', lp: [1247, 358] },
-  { f: 'respond', fs: 'r', t: 'out', ts: 'l' },
+  { f: 'prepare', fs: 'r', t: 'planner', ts: 'l' },
+  { f: 'planner', fs: 'r', t: 'route', ts: 'l' },
+  { f: 'route', fs: 't', t: 'answer', ts: 'b', label: 'Q&A', lp: [627, 152] },
+  { f: 'route', fs: 'b', t: 'ask', ts: 't', label: 'info missing', lp: [627, 366] },
+  { f: 'route', fs: 'r', t: 'orch', ts: 'l', label: 'steps', lp: [719, 236] },
+  { f: 'orch', fs: 'r', t: 'val', ts: 'l' },
+  { f: 'val', fs: 'r', t: 'resp', ts: 'l', label: 'ok', lp: [1112, 236] },
+  { f: 'resp', fs: 'r', t: 'out', ts: 'l' },
+  { f: 'val', fs: 'b', t: 'replan', ts: 't', label: 'hard errors (max 2 fix rounds) or all steps blocked', lp: [1020, 366] },
+  { f: 'replan', fs: 'l', t: 'orch', ts: 'b', via: [[824, 458]], dash: true, loop: true, label: 'run: fix steps with errors + own draft', lp: [840, 486] },
+  { f: 'replan', fs: 'r', t: 'resp', ts: 'b', via: [[1205, 458]], label: 'finish', lp: [1205, 400] },
+  { f: 'val', fs: 't', t: 'stop', ts: 'l', via: [[1020, 72]], dash: true, dot: true, label: 'cap hit', lp: [1020, 150] },
 ];
-const ORCH_GROUP = { x: 172, y: 8, w: 1178, h: 530, label: 'Orchestrator · LangGraph StateGraph — fixed edges, every branch decided in code' };
+const AGENT_GROUP = { x: 172, y: 8, w: 1150, h: 545, label: 'Orchestrator' };
 
 const DIAGRAMS = {
   script: {
     w: 1520, h: 700,
-    groups: [ORCH_GROUP, { x: 195, y: 570, w: 1150, h: 125, label: 'Step 04 zoomed in · tools run in dependency order; only tools in the plan run', panel: true }],
+    groups: [AGENT_GROUP, { x: 195, y: 575, w: 1150, h: 120, label: 'Step 03 zoomed in · drafting tools of the Script thread run in dependency order; a lower level reads this turn\'s upper-level draft', panel: true }],
     nodes: [
       ...SHARED_GRAPH,
-      { id: 'k1', type: 'llm', chip: true, x: 225, y: 615, w: 190, h: 60, title: 'Film script', sub: 'draft_film_script' },
-      { id: 'k2', type: 'llm', chip: true, x: 450, y: 615, w: 190, h: 60, title: 'Episode outline', sub: 'draft_episode_outline' },
-      { id: 'k3', type: 'llm', chip: true, x: 675, y: 615, w: 190, h: 60, title: 'Episode script', sub: 'draft_episode_script' },
-      { id: 'k4', type: 'llm', chip: true, x: 900, y: 615, w: 190, h: 60, title: 'Scene prompts', sub: 'draft_scene_scripts' },
-      { id: 'k5', type: 'llm', chip: true, x: 1125, y: 615, w: 195, h: 60, title: 'Keyframes', sub: 'Keyframe mode only' },
+      { id: 'k1', type: 'llm', chip: true, x: 225, y: 618, w: 190, h: 60, title: 'Film script', sub: 'draft_film_script' },
+      { id: 'k2', type: 'llm', chip: true, x: 450, y: 618, w: 190, h: 60, title: 'Episode outline', sub: 'draft_episode_outline' },
+      { id: 'k3', type: 'llm', chip: true, x: 675, y: 618, w: 190, h: 60, title: 'Episode script', sub: 'draft_episode_script' },
+      { id: 'k4', type: 'llm', chip: true, x: 900, y: 618, w: 190, h: 60, title: 'Scene prompts', sub: 'draft_scene_scripts' },
+      { id: 'k5', type: 'llm', chip: true, x: 1125, y: 618, w: 195, h: 60, title: 'Keyframes', sub: 'Keyframe mode only' },
     ],
     edges: [
       ...SHARED_EDGES,
-      { f: 'execute', fs: 'b', t: null, to: [1062, 570], dash: true, dot: true },
       { f: 'k1', fs: 'r', t: 'k2', ts: 'l' },
       { f: 'k2', fs: 'r', t: 'k3', ts: 'l' },
       { f: 'k3', fs: 'r', t: 'k4', ts: 'l' },
@@ -395,27 +572,25 @@ const DIAGRAMS = {
 
   image: {
     w: 1520, h: 700,
-    groups: [ORCH_GROUP,
-      { x: 700, y: 565, w: 650, h: 130, label: 'Step 04 zoomed in', panel: true }],
+    groups: [AGENT_GROUP, { x: 700, y: 575, w: 620, h: 120, label: 'Step 03 zoomed in · drafting tools of the Image thread', panel: true }],
     nodes: [
       ...SHARED_GRAPH,
-      { id: 'st', type: 'llm', chip: true, x: 725, y: 610, w: 180, h: 62, title: 'Style', sub: 'draft_style' },
-      { id: 'ch', type: 'llm', chip: true, x: 995, y: 598, w: 200, h: 42, title: 'Characters', sub: '' },
-      { id: 'lo', type: 'llm', chip: true, x: 995, y: 646, w: 200, h: 42, title: 'Locations', sub: '' },
-      { id: 'save', type: 'user', chip: true, x: 1380, y: 548, w: 140, h: 62, title: 'User saves card', sub: 'clicks Generate' },
-      { id: 'job', type: 'job', chip: true, x: 1380, y: 630, w: 140, h: 62, title: 'Image job', sub: 'gpt-image-2' },
+      { id: 'st', type: 'llm', chip: true, x: 725, y: 618, w: 180, h: 60, title: 'Style', sub: 'draft_style' },
+      { id: 'ch', type: 'llm', chip: true, x: 990, y: 604, w: 200, h: 40, title: 'Characters', sub: '' },
+      { id: 'lo', type: 'llm', chip: true, x: 990, y: 650, w: 200, h: 40, title: 'Locations', sub: '' },
+      { id: 'save', type: 'user', chip: true, x: 1350, y: 560, w: 165, h: 58, title: 'User saves card', sub: 'clicks Generate' },
+      { id: 'job', type: 'job', chip: true, x: 1350, y: 636, w: 165, h: 58, title: 'Image job', sub: 'gpt-image-2' },
     ],
     edges: [
       ...SHARED_EDGES,
-      { f: 'execute', fs: 'b', t: null, to: [1062, 565], dash: true, dot: true },
       { f: 'st', fs: 'r', t: 'ch', ts: 'l' },
       { f: 'st', fs: 'r', t: 'lo', ts: 'l' },
       { f: 'out', fs: 'b', t: 'save', ts: 't' },
       { f: 'save', fs: 'b', t: 'job', ts: 't' },
     ],
     notes: [
-      { x: 1210, y: 612, w: 130, html: 'Characters and locations run <b>in parallel</b>' },
-      { x: 200, y: 572, w: 470, html: '<b>What differs from orchestrator 1</b><br>Own chat thread and memory per project.<br>Tools: style, then characters and locations.<br>Character prompt shows only that character; location prompt has no people.<br>Image generation is a separate job, outside the agent.' },
+      { x: 1200, y: 612, w: 120, html: 'Characters and locations run <b>in parallel</b>' },
+      { x: 200, y: 580, w: 470, html: '<b>What differs from agent 1</b><br>Own chat thread and memory per project.<br>Tools: style, characters, locations.<br>Character prompt shows only that character; location prompt has no people.<br>Image generation is a separate job, outside the agent.' },
     ],
   },
 
@@ -473,7 +648,7 @@ const DIAGRAMS = {
       { id: 'web', type: 'io', x: 0, y: 285, w: 140, h: 110, title: 'Web app', sub: 'Next.js, React Flow canvas' },
       { id: 'api', type: 'svc', x: 200, y: 60, w: 300, h: 170, title: 'API process', sub: 'FastAPI + uvicorn<br>routes → services → db<br>auth via Depends · gates · budget check<br>gen requests only create a job' },
       { id: 'redis', type: 'svc', x: 225, y: 290, w: 250, h: 100, title: 'Redis', sub: 'ARQ job queue<br>pub/sub for SSE · rate limit' },
-      { id: 'worker', type: 'svc', x: 200, y: 450, w: 300, h: 200, title: 'Worker process', sub: 'ARQ: jobs/handlers → services<br>ai/: LangGraph orchestrator, Quick Video planner, prompts, providers<br>decrypts provider key just before the call' },
+      { id: 'worker', type: 'svc', x: 200, y: 450, w: 300, h: 200, title: 'Worker process', sub: 'ARQ: jobs/handlers → services<br>ai/: plan-and-execute agent (LangGraph), Quick Video planner, prompts, providers<br>decrypts provider key just before the call · traces to Langfuse' },
       { id: 'pg', type: 'svc', x: 590, y: 60, w: 240, h: 120, title: 'PostgreSQL', sub: 'SQLAlchemy 2 async, Alembic<br>LangGraph checkpoint schema' },
       { id: 'prov', type: 'job', x: 590, y: 440, w: 240, h: 110, title: 'Model providers', sub: 'OpenAI: gpt-6-luna, gpt-image-2<br>Vidu: viduq3-turbo · REST via httpx' },
       { id: 'store', type: 'svc', x: 590, y: 580, w: 240, h: 80, title: 'File storage', sub: 'local or S3 (boto3) · FFmpeg' },
@@ -541,7 +716,7 @@ function render(host, d) {
 
   d.edges.forEach(e => {
     const a = byId[e.f];
-    const p1 = anchor(a, e.fs, e.fo || 0);
+    const p1 = e.from || anchor(a, e.fs, e.fo || 0);
     const p2 = e.t ? anchor(byId[e.t], e.ts, e.to2 || 0) : e.to;
     const via = e.via || autoVia(p1, e.fs, p2, e.ts);
     const pts = [p1, ...via, p2];
