@@ -27,7 +27,7 @@
 
   /* ---------- deck frame ---------- */
   .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
-  .deck { position: relative; width: 1600px; height: 900px; transform-origin: center center; }
+  .deck { position: relative; flex: none; width: 1600px; height: 900px; transform-origin: center center; }
   .slide { position: absolute; inset: 0; width: 1600px; height: 900px; background: var(--bg); padding: 36px 40px 0; display: none; overflow: hidden; }
   .slide.active { display: block; }
   .nav { position: fixed; right: 16px; top: 12px; display: flex; gap: 8px; align-items: center; font: 500 13px 'JetBrains Mono', monospace; color: #AEB8C4; z-index: 10; }
@@ -800,7 +800,8 @@ function show(i) {
   history.replaceState(null, '', '#' + (cur + 1));
 }
 function fit() {
-  const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+  const de = document.documentElement;
+  const s = Math.min(de.clientWidth / 1600, de.clientHeight / 900);
   deck.style.transform = `scale(${s})`;
 }
 document.getElementById('prev').onclick = () => show(cur - 1);
@@ -812,6 +813,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'End') show(slides.length - 1);
 });
 window.addEventListener('resize', fit);
+if (document.fonts) document.fonts.ready.then(fit);
 fit(); show(cur);
 </script>
 </body>
