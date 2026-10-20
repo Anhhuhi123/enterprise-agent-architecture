@@ -683,98 +683,98 @@ const LAYERS = [
 {
   id:1, short:'Kickoff', name:'Kickoff & Alignment', icon:'fa-solid fa-handshake', acc:'#22d3ee',
   cats:['customer','delivery'], cap:'FDE-01', who:'Sponsor · Business owner · IT contact',
-  desc:'Agree what the engagement is, who decides, and how you will work together — before touching any code.',
-  core:['Kickoff meeting with the sponsor','Map stakeholders: sponsor, domain expert, IT, security, data owner','Write the engagement charter: goal, non-goals, success','Agree cadence: weekly update, demo day, channel','Request access on day 1: accounts, VPN, data, laptop','Set escalation path and decision owner'],
+  desc:'Agree who you work with, which problem to solve at a high level, and how you will work together — before touching any code.',
+  core:['Identify who you work with and who decides','Capture the initial problem in the sponsor\'s words','Agree how you work: channel, meetings, escalation','Request system and data access'],
   tech:[
     {n:'Confluence',s:'confluence',c:'2684ff',f:'fa-solid fa-file-lines',d:'Shared charter, decision log and notes.'},
     {n:'Jira',s:'jira',c:'2684ff',f:'fa-brands fa-jira',d:'Track tasks, risks and access requests.'},
     {n:'Miro',s:'miro',c:'ffd02f',f:'fa-solid fa-chalkboard',d:'Stakeholder map built live with the customer.'}
   ],
-  build:'Everyone agrees what the engagement is, who makes decisions, and how you will communicate.',
-  signals:['Sponsor has acknowledged the charter','Access requests are submitted and tracked','Weekly cadence is on the calendar'],
+  build:'You know who decides, the problem in the sponsor\'s words, how you will work together — and access is on its way.',
+  signals:['Decision owner named and confirmed','Every access request has an owner'],
   days:[1,2], prereq:[],
   resources:[
     {t:'Google Technical Writing course',u:'https://developers.google.com/tech-writing',k:'Guide'},
     {t:'Radical Candor — direct, kind communication',u:'https://www.radicalcandor.com/',k:'Article'}
   ],
-  project:{name:'Kickoff pack',deliver:['Engagement charter (one page): goal, non-goals, success','Stakeholder map with roles and decision power','Access tracker with owner and due date per item']},
-  risks:['The sponsor is not the real decision owner','Access takes weeks — start on day 1','Nobody knows who can say yes or no']
+  project:{name:'Kickoff pack',deliver:['Stakeholder map: who decides, who to interview','Initial problem statement (one page)','Working agreement + access tracker']},
+  risks:['Sponsor is not the real decision owner','Access takes weeks — start day 1']
 },
 {
   id:2, short:'Discover', name:'Discovery & Scoping', icon:'fa-solid fa-magnifying-glass', acc:'#38bdf8',
   cats:['customer','technical'], cap:'FDE-01', who:'Domain experts · End users · Data owners · Sponsor',
   desc:'Understand the real problem, check the data, choose a right-sized solution and agree a scope the customer signs.',
-  core:['Interview stakeholders and shadow real users','Write the problem statement and success metric','Assess data: source, quality, access, PII, residency','Check whether an LLM is needed at all','Draft solution design with cost and latency estimate','Agree scope, acceptance criteria and risks'],
+  core:['Interview users, shadow real work','Break the problem down: baseline and target per item','Assess data: quality, access, PII','Sign scope and acceptance criteria'],
   tech:[
     {n:'Miro',s:'miro',c:'ffd02f',f:'fa-solid fa-chalkboard',d:'Map the customer\'s process with them.'},
     {n:'Mermaid',s:'mermaid',c:'ff3670',f:'fa-solid fa-diagram-project',d:'Diagrams as code for the design doc.'},
     {n:'Google Sheets',s:'googlesheets',c:'34a853',f:'fa-solid fa-table',d:'Data inventory, estimates and risk register.'}
   ],
   build:'A measurable problem, a solution the data can support, and a scope both sides have signed.',
-  signals:['Customer signed off the problem statement','Success metric can be measured on real data','Scope lists what is out of scope in writing'],
+  signals:['Problem statement signed off','Metric measurable on real data'],
   days:[2,5], prereq:[1],
   resources:[
     {t:'The Mom Test — asking customers good questions',u:'https://www.momtestbook.com/',k:'Book'},
     {t:'Shape Up — shaping and scoping work',u:'https://basecamp.com/shapeup',k:'Book'},
     {t:'AI Roadmap · Layer 05 Evaluation (success metrics)',u:'roadmap-ai.html#layer-5',k:'Internal'}
   ],
-  project:{name:'Discovery & scope pack',deliver:['Discovery doc: problem statement, success metric, eval criteria (F01.1)','Note on where an LLM is NOT the right tool (F01.2)','Solution design with cost/request and latency estimate (F01.3)','Data assessment checklist: source, quality, access, PII, residency (F01.4)','Signed scope: acceptance criteria and risk register (F01.5)']},
-  risks:['Building the requested solution, not solving the real problem','Success metric cannot be measured with the available data','Scope grows after signing — use change control']
+  project:{name:'Discovery & scope pack',deliver:['Problem breakdown: baseline, target, measure, feasibility per item (F01.1, F01.2)','Data assessment (F01.4)','Signed scope + risk register (F01.5)']},
+  risks:['Solving the request, not the problem','Scope creep after sign-off']
 },
 {
   id:3, short:'Design', name:'Design Architecture', icon:'fa-solid fa-drafting-compass', acc:'#818cf8',
   cats:['technical'], cap:'FDE-01', who:'Customer architect · IT · Security',
   desc:'Design the solution with the customer\'s architects before building: components, data flow, boundaries, deployment and cost.',
-  core:['Draw the context and data-flow diagram with the customer','Choose AI pattern and stack; record it in an ADR','Design integration points, identity and data boundaries','Plan the deployment topology: cloud, VPC or on-prem','Estimate cost, latency and capacity; define fallbacks','Review the design with customer IT and security'],
+  core:['Draft design, early check with customer IT','Pick AI pattern and stack (ADR)','Plan identity, data boundary, deployment','Review with customer IT & security'],
   tech:[
     {n:'Mermaid',s:'mermaid',c:'ff3670',f:'fa-solid fa-diagram-project',d:'Architecture diagrams as code, easy to review and version.'},
     {n:'Excalidraw',c:'a5b4fc',f:'fa-solid fa-pen-ruler',d:'Sketch the design live in the review meeting.'},
     {n:'Confluence',s:'confluence',c:'2684ff',f:'fa-solid fa-file-lines',d:'Publish the architecture doc and ADRs.'}
   ],
   build:'A reviewed architecture the customer\'s IT and security accept before you start building.',
-  signals:['Customer architect approved the design','Security raised no blocking issue','Open risks are recorded with owners'],
+  signals:['Customer architect approved','No blocking security issue'],
   days:[6,8], prereq:[2],
   resources:[
     {t:'C4 model for visualising software architecture',u:'https://c4model.com/',k:'Guide'},
     {t:'Architecture Decision Records',u:'https://adr.github.io/',k:'Guide'},
     {t:'AI Roadmap · Layer 10 System Architecture',u:'roadmap-ai.html#layer-10',k:'Internal'}
   ],
-  project:{name:'Architecture pack',deliver:['Architecture diagram: context, components, data flow (F01.3)','ADR for pattern, model and stack choices','Integration, identity and data-boundary design','Deployment topology with cost, latency and capacity estimate']},
-  risks:['Designing without the customer\'s IT standards','Network or data-residency limits found only at deploy time','Over-engineering for a 4-week window']
+  project:{name:'Architecture pack',deliver:['Architecture diagram (F01.3)','ADRs for key choices','Cost & latency estimate']},
+  risks:['Ignoring customer IT standards','Residency/network limits found late']
 },
 {
   id:4, short:'Prototype', name:'Prototype & Prove', icon:'fa-solid fa-bolt', acc:'#a78bfa',
   cats:['technical'], cap:'FDE-02', who:'End users · Domain experts',
   desc:'Show something real on real data within days, iterate weekly with users, and prove it with numbers.',
-  core:['Build the PoC on real (or realistic) data','Demo every week and log feedback','Build an eval set from real tasks (50+)','Compare at least 2 AI patterns','Measure accuracy, cost per task and p95 latency','Go / no-go decision with the sponsor'],
+  core:['Build PoC on real data','Build eval set (50+ tasks)','Measure accuracy, cost, p95 latency','Weekly demo → go / no-go'],
   tech:[
     {n:'FastAPI',s:'fastapi',c:'05c7a8',d:'Expose the prototype as an API quickly.'},
     {n:'LangGraph',s:'langgraph',c:'2dd4bf',f:'fa-solid fa-diagram-project',d:'Stateful agent workflows with human approval.'},
     {n:'Langfuse',s:'langfuse',c:'fb923c',f:'fa-solid fa-magnifying-glass-chart',d:'Traces, datasets and eval runs.'}
   ],
   build:'A working PoC on the customer\'s data, with measured results against the agreed success metric.',
-  signals:['Success metric met on the eval set, or an explicit no-go','Sponsor reviewed the results report','Open issues are turned into a backlog'],
+  signals:['Metric met on eval set, or explicit no-go','Sponsor reviewed results'],
   days:[7,12], prereq:[3],
   resources:[
     {t:'AI Roadmap · Layer 04 RAG & Retrieval',u:'roadmap-ai.html#layer-4',k:'Internal'},
     {t:'AI Roadmap · Layer 08 Agent Orchestration',u:'roadmap-ai.html#layer-8',k:'Internal'},
     {t:'Anthropic: Building effective agents',u:'https://www.anthropic.com/engineering/building-effective-agents',k:'Article'}
   ],
-  project:{name:'PoC & results pack',deliver:['Working PoC on the customer\'s data inside the 4-week window (F02.1)','ADR comparing at least 2 AI patterns','Eval set of 50+ tasks with expected outcomes','Results report: before/after accuracy, cost per task, p95 latency (F02.3)']},
-  risks:['Demo data hides the real mess in production data','Promising accuracy before measuring it','Polishing the UI instead of testing hard cases']
+  project:{name:'PoC & results pack',deliver:['Working PoC (F02.1)','Eval set + pattern comparison ADR','Results report (F02.3)']},
+  risks:['Demo data hides real mess','Promising accuracy before measuring']
 },
 {
   id:5, short:'Integrate', name:'Integrate & Secure', icon:'fa-solid fa-plug-circle-bolt', acc:'#e879f9',
   cats:['integration','technical'], cap:'FDE-02', who:'IT · Security · Data owners',
   desc:'Connect to the customer\'s real systems and pass their security bar: APIs, databases, SSO, secrets and PII.',
-  core:['Connect APIs, databases and files in a retry-safe way','Map schemas and add data-quality checks','Integrate SSO and role-based access','Mask PII; keep secrets out of prompts and logs','Answer the security questionnaire with evidence','Test against a mock when the real system is down'],
+  core:['Connect systems, retry-safe','Add SSO and role-based access','Mask PII, secure secrets','Pass security review with evidence'],
   tech:[
     {n:'PostgreSQL',s:'postgresql',c:'6d9eeb',d:'Staging store and usual target database.'},
     {n:'Airbyte',s:'airbyte',c:'615eff',f:'fa-solid fa-arrows-rotate',d:'Open-source connectors from 300+ sources.'},
     {n:'Keycloak',s:'keycloak',c:'4d4d4d',f:'fa-solid fa-key',d:'Open-source identity provider (OIDC / SAML).'}
   ],
   build:'The solution runs against the customer\'s real systems, with their identity and security controls in place.',
-  signals:['Integration diagram reviewed by customer IT','Re-running a sync creates no duplicates','A user without permission is denied end to end'],
+  signals:['Re-run sync creates no duplicates','Unauthorized user denied end to end'],
   days:[10,15], prereq:[4],
   resources:[
     {t:'Enterprise Integration Patterns',u:'https://www.enterpriseintegrationpatterns.com/',k:'Book'},
@@ -782,50 +782,50 @@ const LAYERS = [
     {t:'OWASP Top 10 for LLM Applications',u:'https://genai.owasp.org/llm-top-10/',k:'Guide'},
     {t:'Microsoft Presidio (PII masking)',u:'https://microsoft.github.io/presidio/',k:'Docs'}
   ],
-  project:{name:'Integration & security pack',deliver:['Integration diagram plus automated tests (F02.2)','Retry-safe sync from the customer\'s API and database, with data-quality checks','SSO via OIDC; user A cannot see user B\'s data','PII masking in prompts and logs, audit log, signed compliance checklist (F03.3)']},
-  risks:['Legacy systems with undocumented behavior','Security review starts late and blocks go-live','Customer data copied to personal laptops']
+  project:{name:'Integration & security pack',deliver:['Integration diagram + tests (F02.2)','SSO + access control','PII masking + compliance checklist (F03.3)']},
+  risks:['Legacy systems, undocumented behavior','Security review starts too late']
 },
 {
   id:6, short:'Deploy', name:'Deploy & Operate', icon:'fa-solid fa-server', acc:'#f472b6',
   cats:['technical','delivery'], cap:'FDE-03', who:'IT / Infra · Security · Ops team',
   desc:'Ship into an environment you do not control — their cloud, VPC or on-prem — then make it observable and supportable.',
-  core:['Package with Docker and deploy with IaC','Fit the customer network: VPC, proxy, firewall, TLS','CI/CD with eval gate, canary and rollback','Dashboard and alerts: quality, latency, cost','Write the runbook and test it with their ops team','Go-live and hypercare'],
+  core:['Docker + IaC deploy','CI/CD with eval gate and rollback','Dashboards and alerts','Runbook, go-live, hypercare'],
   tech:[
     {n:'Docker',s:'docker',c:'2496ed',d:'Package once, run anywhere.'},
     {n:'Terraform',s:'terraform',c:'9f6ae0',d:'Repeatable infrastructure.'},
     {n:'Grafana',s:'grafana',c:'f46800',d:'Dashboards the customer team can read.'}
   ],
   build:'The system is live in the customer\'s environment, and their team can monitor, support and roll it back.',
-  signals:['One-command deploy from a clean environment','Rollback tested in staging','Alert fires on a deliberately injected failure'],
+  signals:['One-command deploy, rollback tested','Alert fires on injected failure'],
   days:[14,18], prereq:[5],
   resources:[
     {t:'Kubernetes tutorials',u:'https://kubernetes.io/docs/tutorials/',k:'Docs'},
     {t:'Terraform tutorials',u:'https://developer.hashicorp.com/terraform/tutorials',k:'Guide'},
     {t:'Google SRE Book — Postmortem culture',u:'https://sre.google/sre-book/postmortem-culture/',k:'Book'}
   ],
-  project:{name:'Go-live pack',deliver:['Reproducible deploy with a single command (F03.1)','CI/CD with eval gate, canary and tested rollback (F03.2)','Dashboard and alerts for quality, latency, tokens and cost (F03.4)','Runbook followed successfully by their ops team']},
-  risks:['No internet access or a locked-down image registry','Nobody on the customer side owns operations','Deployment knowledge lives only in your head']
+  project:{name:'Go-live pack',deliver:['Reproducible deploy + CI/CD (F03.1, F03.2)','Monitoring & alerts (F03.4)','Runbook tested by ops']},
+  risks:['Locked-down network or registry','No ops owner on customer side']
 },
 {
   id:7, short:'Adopt', name:'Adopt & Handover', icon:'fa-solid fa-chart-line', acc:'#84cc16',
   cats:['customer','delivery'], cap:'FDE-03', who:'End users · Ops team · Sponsor',
   desc:'Make the customer self-sufficient, prove the value against the original metric, and turn this delivery into the next.',
-  core:['Train users and name champions','Hand over docs, runbook and support model','Turn feedback into backlog and new eval cases','Track value against the original success metric','Optimize cost after go-live','Retrospective, product feedback, next use case'],
+  core:['Train users, name champions','Hand over docs and ownership','Measure value vs. baseline','Feed learnings back to product'],
   tech:[
     {n:'Confluence',s:'confluence',c:'2684ff',f:'fa-solid fa-file-lines',d:'Handover documentation hub.'},
     {n:'Langfuse',s:'langfuse',c:'fb923c',f:'fa-solid fa-magnifying-glass-chart',d:'Cost and quality data for the value report.'},
     {n:'GitHub',s:'github',c:'ffffff',f:'fa-brands fa-github',d:'Turn field code into reusable components.'}
   ],
   build:'The customer runs the system without you, the value is measured, and the next opportunity is on the table.',
-  signals:['Customer team operated it unaided for a week','Value report compares against the original metric','A reusable component or playbook went back to the team'],
+  signals:['Customer ran it unaided for a week','Value report vs. original metric'],
   days:[17,20], prereq:[6],
   resources:[
     {t:'Diátaxis documentation framework',u:'https://diataxis.fr/',k:'Guide'},
     {t:'ADKAR change model',u:'https://www.prosci.com/methodology/adkar',k:'Article'},
     {t:'AI Roadmap · Cost Optimization (Supplements)',u:'roadmap-ai.html#supp',k:'Internal'}
   ],
-  project:{name:'Handover & value pack',deliver:['Architecture doc, runbook, user guide; training delivered (F03.6)','Customer feedback turned into backlog and new eval cases (F02.5)','Value report: before/after on the original success metric','Cost per task before/after optimization (F03.5) and next use-case proposal']},
-  risks:['Handover happens in one meeting, then silence','No named owner on the customer side','Value never measured, so the project looks optional']
+  project:{name:'Handover & value pack',deliver:['Docs + training (F03.6)','Value & cost report (F03.5)','Backlog + next use case (F02.5)']},
+  risks:['Handover in one meeting, then silence','Value never measured']
 }
 ];
 
@@ -862,7 +862,7 @@ const STATUSES = [
 ];
 const CAT_LABEL = {technical:'Technical',integration:'Integration',customer:'Customer',delivery:'Delivery'};
 const STORE_KEY = 'fde-roadmap-status-v1';
-const CHECK_KEY = 'fde-roadmap-checks-v1';
+const CHECK_KEY = 'fde-roadmap-checks-v2';
 const COLLAPSED_CHIPS = 8;
 
 /* ================= HELPERS ================= */
