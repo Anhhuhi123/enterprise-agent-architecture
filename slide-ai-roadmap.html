@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Engineer Roadmap — Slide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#E9ECF1}
+body{display:grid;place-items:center;overflow:hidden;font-family:'IBM Plex Sans',Arial,sans-serif}
+.slide{width:1920px;height:1080px;flex:none;background:#fff;color:#14213D;padding:56px 80px 40px;display:flex;flex-direction:column;gap:24px;transform-origin:center;box-shadow:0 10px 40px rgba(20,33,61,.15)}
+.head{display:flex;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#0F766E}
+h1{font-family:'Space Grotesk',Arial,sans-serif;font-size:60px;font-weight:700;line-height:1.1;margin-top:6px}
+.note{font-size:24px;color:#5B6478}
+.table{display:flex;flex-direction:column;border:1px solid #D9DEE8;border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:520px 560px 1fr;align-items:center;gap:32px;padding:0 32px;height:72px;border-top:1px solid #E6EAF1}
+.row.th{height:52px;border-top:0;background:#14213D;color:#fff;font-size:22px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+.row:nth-child(even):not(.th){background:#F5F8FA}
+.lv{display:flex;align-items:center;gap:18px;font-size:28px;font-weight:600}
+.lv b{font-family:'Space Grotesk',Arial,sans-serif;width:56px;height:44px;border-radius:10px;background:#0F766E;color:#fff;display:grid;place-items:center;font-size:24px}
+.tech{display:flex;flex-wrap:wrap;gap:8px}
+.tech span{font-size:22px;font-weight:500;background:#E3F3F0;color:#0B4F49;padding:4px 14px;border-radius:999px;white-space:nowrap}
+.out{font-size:25px;line-height:1.25}
+</style>
+</head>
+<body>
+<main class="slide" id="slide">
+  <div class="head">
+    <div>
+      <p class="eyebrow">AI Engineer roadmap</p>
+      <h1>11 levels: technology and outcome</h1>
+    </div>
+    <p class="note">+ 8 supplements: context engineering, cost optimization, privacy, fine-tuning…</p>
+  </div>
+  <div class="table">
+    <div class="row th"><span>Level</span><span>Technology</span><span>Outcome</span></div>
+    <div class="row"><div class="lv"><b>01</b>LLM &amp; Models</div><div class="tech"><span>OpenAI</span><span>LiteLLM</span><span>Ollama</span></div><p class="out">Right model per task; structured output within a latency and cost budget</p></div>
+    <div class="row"><div class="lv"><b>02</b>Data &amp; Knowledge</div><div class="tech"><span>Docling</span><span>OpenAI Embeddings</span></div><p class="out">Documents parsed, chunked, embedded and indexed (incrementally)</p></div>
+    <div class="row"><div class="lv"><b>03</b>Storage</div><div class="tech"><span>PostgreSQL + pgvector</span><span>Redis</span><span>S3</span></div><p class="out">Right store per access pattern: SQL, vector, cache, object</p></div>
+    <div class="row"><div class="lv"><b>04</b>RAG &amp; Retrieval</div><div class="tech"><span>LlamaIndex</span><span>PostgreSQL FTS</span><span>BGE Reranker</span></div><p class="out">Hybrid search with reranker; recall@k measured before and after</p></div>
+    <div class="row"><div class="lv"><b>05</b>Evaluation</div><div class="tech"><span>DeepEval</span><span>Langfuse</span></div><p class="out">Golden set of 50+ cases; every change reports metric deltas</p></div>
+    <div class="row"><div class="lv"><b>06</b>Tools &amp; Security</div><div class="tech"><span>MCP</span><span>OpenAPI</span><span>Pydantic</span><span>SQLGlot</span></div><p class="out">Typed tools, read-only validated SQL, injection red-teamed</p></div>
+    <div class="row"><div class="lv"><b>07</b>Semantic Layer</div><div class="tech"><span>Cube</span></div><p class="out">Business metrics defined once; agents query via semantic API</p></div>
+    <div class="row"><div class="lv"><b>08</b>Agent Orchestration</div><div class="tech"><span>LangGraph</span></div><p class="out">Stateful workflow with human approval and failure recovery</p></div>
+    <div class="row"><div class="lv"><b>09</b>Agent Memory</div><div class="tech"><span>LangGraph Checkpointer</span><span>Mem0</span></div><p class="out">Runs resume from checkpoint; memory scoped per user with TTL</p></div>
+    <div class="row"><div class="lv"><b>10</b>System Architecture</div><div class="tech"><span>FastAPI</span><span>Redis</span><span>Celery</span><span>ALB</span></div><p class="out">Streaming, multi-tenant API that survives a provider outage</p></div>
+    <div class="row"><div class="lv"><b>11</b>LLMOps</div><div class="tech"><span>Langfuse</span><span>OpenTelemetry</span><span>GitHub Actions</span><span>Docker</span><span>Terraform</span></div><p class="out">Every step traced; eval-gated CI; one-command deploy and rollback</p></div>
+  </div>
+</main>
+<script>
+function fit(){var s=document.getElementById('slide'),k=Math.min(innerWidth/1920,innerHeight/1080);s.style.transform='scale('+k+')';}
+addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

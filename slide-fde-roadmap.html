@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FDE Roadmap — Slide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#E9ECF1}
+body{display:grid;place-items:center;overflow:hidden;font-family:'IBM Plex Sans',Arial,sans-serif}
+.slide{width:1920px;height:1080px;flex:none;background:#fff;color:#14213D;padding:56px 80px 40px;display:flex;flex-direction:column;gap:28px;transform-origin:center;box-shadow:0 10px 40px rgba(20,33,61,.15)}
+.head{display:flex;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#0F766E}
+h1{font-family:'Space Grotesk',Arial,sans-serif;font-size:60px;font-weight:700;line-height:1.1;margin-top:6px}
+.note{font-size:24px;color:#5B6478}
+.table{display:flex;flex-direction:column;border:1px solid #D9DEE8;border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:500px 540px 1fr;align-items:center;gap:32px;padding:0 32px;height:106px;border-top:1px solid #E6EAF1}
+.row.th{height:56px;border-top:0;background:#14213D;color:#fff;font-size:22px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+.row:nth-child(even):not(.th){background:#F5F8FA}
+.st{display:flex;align-items:center;gap:18px}
+.st b{font-family:'Space Grotesk',Arial,sans-serif;width:56px;height:56px;border-radius:12px;background:#0F766E;color:#fff;display:grid;place-items:center;font-size:26px;flex:none}
+.st div{display:flex;flex-direction:column;gap:2px}
+.st strong{font-size:30px;font-weight:600}
+.st small{font-size:22px;color:#5B6478}
+.tech{display:flex;flex-wrap:wrap;gap:8px}
+.tech span{font-size:22px;font-weight:500;background:#E3F3F0;color:#0B4F49;padding:4px 14px;border-radius:999px;white-space:nowrap}
+.out{font-size:27px;line-height:1.3}
+</style>
+</head>
+<body>
+<main class="slide" id="slide">
+  <div class="head">
+    <div>
+      <p class="eyebrow">Forward Deployed Engineer roadmap</p>
+      <h1>7 stages in 4 weeks: technology and outcome</h1>
+    </div>
+    <p class="note">Each stage ends with an exit gate the customer signs</p>
+  </div>
+  <div class="table">
+    <div class="row th"><span>Stage</span><span>Technology</span><span>Outcome</span></div>
+    <div class="row"><div class="st"><b>01</b><div><strong>Kickoff</strong><small>Day 1–2</small></div></div><div class="tech"><span>Confluence</span><span>Jira</span><span>Miro</span></div><p class="out">Decision owner named, problem on one page with a current number, access moving</p></div>
+    <div class="row"><div class="st"><b>02</b><div><strong>Discover</strong><small>Day 2–5</small></div></div><div class="tech"><span>Miro</span><span>Mermaid</span><span>Google Sheets</span></div><p class="out">Measured problem with baseline and target; data assessed; scope signed</p></div>
+    <div class="row"><div class="st"><b>03</b><div><strong>Design</strong><small>Day 6–8</small></div></div><div class="tech"><span>Mermaid</span><span>Excalidraw</span><span>Confluence</span></div><p class="out">Architecture and ADRs approved by customer IT; cost and latency estimated</p></div>
+    <div class="row"><div class="st"><b>04</b><div><strong>Prototype</strong><small>Day 7–12</small></div></div><div class="tech"><span>FastAPI</span><span>LangGraph</span><span>Langfuse</span></div><p class="out">PoC running on real data; accuracy, cost and p95 measured; go / no-go decided</p></div>
+    <div class="row"><div class="st"><b>05</b><div><strong>Integrate</strong><small>Day 10–15</small></div></div><div class="tech"><span>PostgreSQL</span><span>Airbyte</span><span>Keycloak</span></div><p class="out">Real systems connected, no duplicates on re-run; SSO enforced; security review passed</p></div>
+    <div class="row"><div class="st"><b>06</b><div><strong>Deploy</strong><small>Day 14–18</small></div></div><div class="tech"><span>Docker</span><span>Terraform</span><span>Grafana</span></div><p class="out">Live in the customer's environment; one-command deploy, tested rollback, alerts</p></div>
+    <div class="row"><div class="st"><b>07</b><div><strong>Adopt</strong><small>Day 17–20</small></div></div><div class="tech"><span>Confluence</span><span>Langfuse</span><span>GitHub</span></div><p class="out">Customer runs it unaided; value report vs. baseline; next use case agreed</p></div>
+  </div>
+</main>
+<script>
+function fit(){var s=document.getElementById('slide'),k=Math.min(innerWidth/1920,innerHeight/1080);s.style.transform='scale('+k+')';}
+addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

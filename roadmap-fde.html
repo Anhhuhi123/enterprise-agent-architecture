@@ -234,32 +234,15 @@ a.btn{text-decoration:none;color:inherit}
 .layer.open .chip.extra,.layer.show-all .chip.extra{display:inline-block}
 .chip.more{color:var(--muted);border-style:dashed;border-color:var(--border-strong);background:transparent}
 .layer.open .chip.more,.layer.show-all .chip.more{display:none}
-.chip.match,.tech.match,.trow.match{background:color-mix(in srgb,var(--acc) 35%,transparent);border-color:var(--acc);color:#fff;box-shadow:0 0 16px -2px var(--acc)}
+.chip.match,.out-list li.match{background:color-mix(in srgb,var(--acc) 35%,transparent);border-color:var(--acc);color:#fff;box-shadow:0 0 16px -2px var(--acc)}
 .print-build{display:none}
 
-.l-tech{border-left:1px solid var(--border);padding-left:22px;min-width:0}
-.l-tech .sec-label{margin-top:2px}
-.tech-grid{display:flex;flex-wrap:wrap;gap:7px}
-.tech{
-  display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 7px;border-radius:10px;
-  background:linear-gradient(180deg,rgba(30,40,68,.7),rgba(18,25,44,.7));
-  border:1px solid rgba(192,132,252,.22);transition:transform .2s,border-color .2s,box-shadow .2s;
-  font-size:12.5px;font-weight:600;color:#e6e9f5;position:relative;
-}
-.tech:hover,.tech:focus-visible{transform:translateY(-2px);border-color:rgba(192,132,252,.6);box-shadow:0 10px 26px -10px rgba(139,92,246,.7);outline:none}
-.tech:hover .ico,.tech:focus-visible .ico{transform:scale(1.22)}
-.ico{width:22px;height:22px;flex:none;display:grid;place-items:center;border-radius:6px;background:rgba(255,255,255,.05);transition:transform .2s}
-.ico img{width:15px;height:15px;display:block}
-.ico .fbk{display:none;font-size:12px;line-height:1}
-.ico.fb img{display:none}
-.ico.fb .fbk,.ico.nos .fbk{display:grid;place-items:center}
-.tech.alt{border-style:dashed;border-color:rgba(148,163,184,.3);background:rgba(15,21,37,.35);color:var(--muted);font-weight:500}
-.tech.alt .ico{opacity:.7}
+.l-out{border-left:1px solid var(--border);padding-left:22px;min-width:0}
+.l-out .sec-label{margin-top:2px}
+.out-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.out-list li{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.4;color:#e6e9f5;border-radius:8px;padding:2px 4px;margin:-2px -4px}
+.out-list li i{color:var(--acc);font-size:13px;margin-top:2px;flex:none}
 .legend-demo{padding:3px 10px;font-size:11px;pointer-events:none}
-.trow.alt b{color:var(--muted);font-weight:500}
-.box h4.alt-h{margin-top:16px}
-.box h4.alt-h i{color:var(--dim)}
-.mono{font-family:var(--mono);font-size:8.5px !important;font-weight:700;letter-spacing:-.02em}
 
 .expand{align-self:start;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:rgba(5,8,16,.6);
   display:grid;place-items:center;color:var(--muted);transition:.3s}
@@ -271,7 +254,7 @@ a.btn{text-decoration:none;color:inherit}
 .layer.open .layer-body{grid-template-rows:1fr}
 .layer-body-inner{overflow:hidden}
 .body-grid{
-  display:grid;grid-template-columns:1.1fr 1.25fr 1fr;gap:18px;margin:0 22px 22px 26px;padding-top:20px;
+  display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin:0 22px 22px 26px;padding-top:20px;
   border-top:1px dashed var(--border-strong);
 }
 .box{background:rgba(5,8,16,.45);border:1px solid var(--border);border-radius:14px;padding:16px}
@@ -282,12 +265,6 @@ a.btn{text-decoration:none;color:inherit}
 .comp-list li{font-size:13px;color:#d6deec;display:flex;align-items:center;gap:8px}
 .comp-list li::before{content:"";width:5px;height:5px;border-radius:2px;background:var(--acc);flex:none;box-shadow:0 0 8px var(--acc)}
 .comp-list li.match{color:#fff;font-weight:600}
-.tlist{display:flex;flex-direction:column;gap:6px}
-.trow{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:center;padding:6px 8px;border-radius:9px;border:1px solid transparent}
-.trow .ico{width:26px;height:26px}
-.trow .ico img{width:16px;height:16px}
-.trow b{font-size:13px;font-weight:600;display:block;line-height:1.2}
-.trow span{font-size:11.8px;color:var(--muted);line-height:1.35;display:block}
 .build{
   background:linear-gradient(160deg,color-mix(in srgb,var(--acc) 16%,transparent),rgba(5,8,16,.5) 70%);
   border-color:color-mix(in srgb,var(--acc) 38%,transparent);display:flex;flex-direction:column;
@@ -326,8 +303,6 @@ body.arch-mode .arch{display:block}
 .node-t{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.06em}
 .node-s{font-size:12px;color:var(--muted);margin-top:2px}
 .node-s .lb{font-family:var(--mono);color:var(--acc);font-weight:700;margin-right:6px}
-.node-icons{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
-.node-icons .ico{width:24px;height:24px;background:rgba(255,255,255,.06)}
 .node-status{font-size:10.5px;font-family:var(--mono);color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap;align-self:start}
 .node.user{--acc:#e2e8f0;max-width:420px;margin:0 auto;width:100%;cursor:default}
 .node.user:hover{transform:none}
@@ -434,17 +409,6 @@ body.arch-mode .timeline{display:none}
 .tl-bar:hover,.tl-bar:focus-visible{box-shadow:0 0 16px -2px var(--acc);outline:none}
 @media print{.timeline{display:none}}
 
-/* ---------- Tooltip ---------- */
-.tip{
-  position:fixed;z-index:100;pointer-events:none;max-width:280px;padding:10px 12px;border-radius:11px;
-  background:rgba(10,14,26,.96);border:1px solid rgba(192,132,252,.45);
-  box-shadow:0 18px 40px -10px rgba(0,0,0,.8),0 0 24px -8px rgba(139,92,246,.6);
-  opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;
-}
-.tip.show{opacity:1;transform:none}
-.tip b{display:flex;align-items:center;gap:8px;font-size:13px}
-.tip span{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
-.tip em{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dim);display:block;margin-top:6px}
 
 /* ---------- Footer ---------- */
 footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);text-align:center}
@@ -458,10 +422,9 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
 /* ---------- Responsive ---------- */
 @media (max-width:1180px){
   .layer-head{grid-template-columns:100px minmax(0,1fr) 36px}
-  .l-tech{grid-column:2/3;grid-row:2;border-left:0;padding-left:0;border-top:1px solid var(--border);padding-top:14px}
+  .l-out{grid-column:2/3;grid-row:2;border-left:0;padding-left:0;border-top:1px solid var(--border);padding-top:14px}
   .expand{grid-column:3;grid-row:1}
   .body-grid{grid-template-columns:1fr 1fr}
-  .build{grid-column:1/-1}
 }
 @media (max-width:980px){
   .hero{grid-template-columns:1fr;gap:28px;padding-top:40px}
@@ -479,7 +442,7 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
   .num{font-size:44px}
   .status{width:auto;margin-top:0}
   .l-main{grid-column:1/-1;grid-row:2}
-  .l-tech{grid-column:1/-1;grid-row:3}
+  .l-out{grid-column:1/-1;grid-row:3}
   .expand{grid-column:2;grid-row:1}
   .l-title{font-size:19px}
   .body-grid{grid-template-columns:1fr;margin:0 16px 16px}
@@ -505,7 +468,7 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none !important;transition:none !important}
   body{background:#fff;color:#0f172a;font-size:9pt}
-  .bg-fx,.toolbar,.search-status,.arch,.path,.expand,.layer-body,.panel,.eyebrow,.spine,.tip,.f-flow button:hover{display:none !important}
+  .bg-fx,.toolbar,.search-status,.arch,.path,.expand,.layer-body,.panel,.eyebrow,.spine,.f-flow button:hover{display:none !important}
   .wrap{max-width:none;padding:0}
   .hero{display:block;padding:0 0 4mm;border-bottom:1.5pt solid #0f172a;margin-bottom:4mm}
   .title{margin:0}
@@ -536,12 +499,10 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
   .chips{gap:2.5px}
   .chip,.chip.extra{display:inline-block !important;font-size:6.8pt;padding:1px 5px;border-radius:4px;color:#0f172a;background:#f1f5f9 !important;border:0.5pt solid #cbd5e1 !important;box-shadow:none !important}
   .chip.more{display:none !important}
-  .l-tech{grid-column:2;border:0;padding:0}
-  .tech-grid{gap:2.5px}
-  .tech{font-size:6.8pt;padding:1px 5px 1px 2px;gap:3px;border-radius:4px;background:#fff !important;border:0.5pt solid #c4b5fd !important;color:#1e1b4b;box-shadow:none !important}
-  .ico{width:12px;height:12px;background:#0f172a;border-radius:3px}
-  .ico img{width:8px;height:8px}
-  .ico .fbk{font-size:6.5pt}
+  .l-out{grid-column:2;border:0;padding:0}
+  .out-list{gap:2px}
+  .out-list li{font-size:6.8pt;color:#0f172a}
+  .out-list li i{font-size:6.5pt;margin-top:1px}
   .print-build{display:block;margin-top:4px;font-size:7pt;color:#334155;font-style:italic;border-left:1.5pt solid var(--acc);padding-left:5px}
   .print-build b{font-style:normal;color:#0f172a}
   footer{margin-top:4mm;padding:3mm 0 0;border-color:#cbd5e1;break-inside:avoid}
@@ -549,7 +510,6 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
   .f-flow{margin-top:1mm;font-size:8pt}
   .f-flow button{color:#334155}
   .f-meta{display:none}
-  .tech.alt{border-style:dashed !important;color:#64748b}
   .supp{margin-top:4mm;break-before:page}
   .supp-intro .eyebrow{display:none}
   .supp-intro h3{font-size:12pt;color:#0f172a}
@@ -582,7 +542,7 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
       </p>
       <div class="legend">
         <div class="legend-item"><span class="legend-key core">ACTIVITIES</span>= what you do</div>
-        <div class="legend-item"><span class="legend-key tools">TOOLS</span>= main tools</div>
+        <div class="legend-item"><span class="legend-key tools">OUTCOME</span>= what you get after each stage</div>
               </div>
       <div class="print-meta" id="printMeta"></div>
     </div>
@@ -605,7 +565,7 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
     <div class="toolbar-inner">
       <label class="search" id="searchWrap">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="search" type="search" placeholder="Search activity or tool..." autocomplete="off" aria-label="Search activity or tool">
+        <input id="search" type="search" placeholder="Search activity or outcome..." autocomplete="off" aria-label="Search activity or outcome">
         <span class="kbd">/</span>
         <button class="clear-search" id="clearSearch" type="button" aria-label="Clear search"><i class="fa-solid fa-xmark"></i></button>
       </label>
@@ -670,55 +630,45 @@ footer{margin:56px 0 0;padding:34px 0 44px;border-top:1px solid var(--border);te
   </footer>
 </div>
 
-<div class="tip" id="tip" role="tooltip"></div>
 
 <script>
 (function(){
 'use strict';
 
 /* ================= DATA =================
-   tech: n=name, s=Simple Icons slug, c=icon color, f=fallback icon class, m=monogram, d=description,
-         alt=true → alternative (awareness only); otherwise part of the team's default stack */
+   outcome: what the customer has in hand when the stage is done (shown in the stage header) */
 const LAYERS = [
 {
   id:1, short:'Kickoff', name:'Kickoff & Alignment', icon:'fa-solid fa-handshake', acc:'#22d3ee',
   cats:['customer','delivery'], cap:'FDE-01', who:'Sponsor · Business owner · IT contact',
   desc:'Agree who you work with, which problem to solve at a high level, and how you will work together — before touching any code.',
-  core:['Identify who you work with and who decides','Capture the initial problem in the sponsor\'s words','Agree how you work: channel, meetings, escalation','Request system and data access'],
-  tech:[
-    {n:'Confluence',s:'confluence',c:'2684ff',f:'fa-solid fa-file-lines',d:'Shared charter, decision log and notes.'},
-    {n:'Jira',s:'jira',c:'2684ff',f:'fa-brands fa-jira',d:'Track tasks, risks and access requests.'},
-    {n:'Miro',s:'miro',c:'ffd02f',f:'fa-solid fa-chalkboard',d:'Stakeholder map built live with the customer.'}
-  ],
-  build:'You know who decides, the problem in the sponsor\'s words, how you will work together — and access is on its way.',
-  signals:['Decision owner named and confirmed','Every access request has an owner'],
+  core:['Kickoff meeting 60 min: sponsor, business owner, IT — name 1 decision owner and 1 sign-off person','Write the problem in the sponsor\'s words, with today\'s cost (hours or money per week)','Agree channel, 15-min daily, weekly demo and who to escalate to','Send access list (VPN, accounts, sample data) with an owner and a due date each'],
+  outcome:['1 decision owner and 1 sign-off person, both confirmed in writing','One-page problem statement with 1 current number (e.g. 300 cases/week × 12 min each)','Access tracker: every item has an owner and a date; blockers granted by day 3'],
+  build:'You know who signs off, the problem in the sponsor\'s words with a current number, how you will work together — and you hold at least one working account and one real data sample.',
+  signals:['Decision owner and sign-off person confirmed in writing','At least 1 working account and 1 real data sample in hand'],
   days:[1,2], prereq:[],
   resources:[
     {t:'Google Technical Writing course',u:'https://developers.google.com/tech-writing',k:'Guide'},
     {t:'Radical Candor — direct, kind communication',u:'https://www.radicalcandor.com/',k:'Article'}
   ],
-  project:{name:'Kickoff pack',deliver:['Stakeholder map: who decides, who to interview','Initial problem statement (one page)','Working agreement + access tracker']},
+  project:{name:'Kickoff pack',deliver:['Stakeholder map: decision owner, sign-off person, 5–8 users to interview','Problem statement (1 page) with today\'s baseline number','Working agreement + access tracker (owner and due date per item)']},
   risks:['Sponsor is not the real decision owner','Access takes weeks — start day 1']
 },
 {
   id:2, short:'Discover', name:'Discovery & Scoping', icon:'fa-solid fa-magnifying-glass', acc:'#38bdf8',
   cats:['customer','technical'], cap:'FDE-01', who:'Domain experts · End users · Data owners · Sponsor',
   desc:'Understand the real problem, check the data, choose a right-sized solution and agree a scope the customer signs.',
-  core:['Interview users, shadow real work','Break the problem down: baseline and target per item','Assess data: quality, access, PII','Sign scope and acceptance criteria'],
-  tech:[
-    {n:'Miro',s:'miro',c:'ffd02f',f:'fa-solid fa-chalkboard',d:'Map the customer\'s process with them.'},
-    {n:'Mermaid',s:'mermaid',c:'ff3670',f:'fa-solid fa-diagram-project',d:'Diagrams as code for the design doc.'},
-    {n:'Google Sheets',s:'googlesheets',c:'34a853',f:'fa-solid fa-table',d:'Data inventory, estimates and risk register.'}
-  ],
-  build:'A measurable problem, a solution the data can support, and a scope both sides have signed.',
-  signals:['Problem statement signed off','Metric measurable on real data'],
+  core:['Interview 5–8 real users, shadow at least 2 work shifts','Break the problem into tasks: baseline, target and how to measure each','Sample 100+ real records: count missing/bad rate, flag PII fields','Pick the first use case and write down what is out of scope for 4 weeks'],
+  outcome:['Breakdown table: per task baseline, target, measure and feasibility','Data report: sources, owners, % usable records, PII field list','1-page scope with numeric acceptance criteria (e.g. ≥90% correct on 50 sample cases)'],
+  build:'A measurable problem with numbers per task, a solution the real data can support, and a scope with numeric acceptance criteria that both sides have signed.',
+  signals:['Metric measured on real data, not estimated','Sponsor signed the scope, including the out-of-scope list'],
   days:[2,5], prereq:[1],
   resources:[
     {t:'The Mom Test — asking customers good questions',u:'https://www.momtestbook.com/',k:'Book'},
     {t:'Shape Up — shaping and scoping work',u:'https://basecamp.com/shapeup',k:'Book'},
     {t:'AI Roadmap · Layer 05 Evaluation (success metrics)',u:'roadmap-ai.html#layer-5',k:'Internal'}
   ],
-  project:{name:'Discovery & scope pack',deliver:['Problem breakdown: baseline, target, measure, feasibility per item (F01.1, F01.2)','Data assessment (F01.4)','Signed scope + risk register (F01.5)']},
+  project:{name:'Discovery & scope pack',deliver:['Problem breakdown: baseline, target, measure, feasibility per task (F01.1, F01.2)','Data assessment: usable %, owners, PII list (F01.4)','Signed scope with numeric acceptance criteria + risk register (F01.5)']},
   risks:['Solving the request, not the problem','Scope creep after sign-off']
 },
 {
@@ -726,11 +676,7 @@ const LAYERS = [
   cats:['technical'], cap:'FDE-01', who:'Customer architect · IT · Security',
   desc:'Design the solution with the customer\'s architects before building: components, data flow, boundaries, deployment and cost.',
   core:['Draft design, early check with customer IT','Pick AI pattern and stack (ADR)','Plan identity, data boundary, deployment','Review with customer IT & security'],
-  tech:[
-    {n:'Mermaid',s:'mermaid',c:'ff3670',f:'fa-solid fa-diagram-project',d:'Architecture diagrams as code, easy to review and version.'},
-    {n:'Excalidraw',c:'a5b4fc',f:'fa-solid fa-pen-ruler',d:'Sketch the design live in the review meeting.'},
-    {n:'Confluence',s:'confluence',c:'2684ff',f:'fa-solid fa-file-lines',d:'Publish the architecture doc and ADRs.'}
-  ],
+  outcome:['Architecture diagram + ADRs approved by customer architect','Identity, data boundary and deployment agreed','Cost and latency estimate on the table'],
   build:'A reviewed architecture the customer\'s IT and security accept before you start building.',
   signals:['Customer architect approved','No blocking security issue'],
   days:[6,8], prereq:[2],
@@ -747,11 +693,7 @@ const LAYERS = [
   cats:['technical'], cap:'FDE-02', who:'End users · Domain experts',
   desc:'Show something real on real data within days, iterate weekly with users, and prove it with numbers.',
   core:['Build PoC on real data','Build eval set (50+ tasks)','Measure accuracy, cost, p95 latency','Weekly demo → go / no-go'],
-  tech:[
-    {n:'FastAPI',s:'fastapi',c:'05c7a8',d:'Expose the prototype as an API quickly.'},
-    {n:'LangGraph',s:'langgraph',c:'2dd4bf',f:'fa-solid fa-diagram-project',d:'Stateful agent workflows with human approval.'},
-    {n:'Langfuse',s:'langfuse',c:'fb923c',f:'fa-solid fa-magnifying-glass-chart',d:'Traces, datasets and eval runs.'}
-  ],
+  outcome:['Working PoC running on the customer\'s real data','Eval results: accuracy, cost, p95 latency vs. target','Sponsor go / no-go decision'],
   build:'A working PoC on the customer\'s data, with measured results against the agreed success metric.',
   signals:['Metric met on eval set, or explicit no-go','Sponsor reviewed results'],
   days:[7,12], prereq:[3],
@@ -768,11 +710,7 @@ const LAYERS = [
   cats:['integration','technical'], cap:'FDE-02', who:'IT · Security · Data owners',
   desc:'Connect to the customer\'s real systems and pass their security bar: APIs, databases, SSO, secrets and PII.',
   core:['Connect systems, retry-safe','Add SSO and role-based access','Mask PII, secure secrets','Pass security review with evidence'],
-  tech:[
-    {n:'PostgreSQL',s:'postgresql',c:'6d9eeb',d:'Staging store and usual target database.'},
-    {n:'Airbyte',s:'airbyte',c:'615eff',f:'fa-solid fa-arrows-rotate',d:'Open-source connectors from 300+ sources.'},
-    {n:'Keycloak',s:'keycloak',c:'4d4d4d',f:'fa-solid fa-key',d:'Open-source identity provider (OIDC / SAML).'}
-  ],
+  outcome:['Systems connected; re-runs create no duplicates','SSO and role-based access enforced end to end','Security review passed with evidence'],
   build:'The solution runs against the customer\'s real systems, with their identity and security controls in place.',
   signals:['Re-run sync creates no duplicates','Unauthorized user denied end to end'],
   days:[10,15], prereq:[4],
@@ -790,11 +728,7 @@ const LAYERS = [
   cats:['technical','delivery'], cap:'FDE-03', who:'IT / Infra · Security · Ops team',
   desc:'Ship into an environment you do not control — their cloud, VPC or on-prem — then make it observable and supportable.',
   core:['Docker + IaC deploy','CI/CD with eval gate and rollback','Dashboards and alerts','Runbook, go-live, hypercare'],
-  tech:[
-    {n:'Docker',s:'docker',c:'2496ed',d:'Package once, run anywhere.'},
-    {n:'Terraform',s:'terraform',c:'9f6ae0',d:'Repeatable infrastructure.'},
-    {n:'Grafana',s:'grafana',c:'f46800',d:'Dashboards the customer team can read.'}
-  ],
+  outcome:['Live in the customer\'s environment, one-command deploy','Dashboards and alerts their ops team can read','Runbook and tested rollback'],
   build:'The system is live in the customer\'s environment, and their team can monitor, support and roll it back.',
   signals:['One-command deploy, rollback tested','Alert fires on injected failure'],
   days:[14,18], prereq:[5],
@@ -811,11 +745,7 @@ const LAYERS = [
   cats:['customer','delivery'], cap:'FDE-03', who:'End users · Ops team · Sponsor',
   desc:'Make the customer self-sufficient, prove the value against the original metric, and turn this delivery into the next.',
   core:['Train users, name champions','Hand over docs and ownership','Measure value vs. baseline','Feed learnings back to product'],
-  tech:[
-    {n:'Confluence',s:'confluence',c:'2684ff',f:'fa-solid fa-file-lines',d:'Handover documentation hub.'},
-    {n:'Langfuse',s:'langfuse',c:'fb923c',f:'fa-solid fa-magnifying-glass-chart',d:'Cost and quality data for the value report.'},
-    {n:'GitHub',s:'github',c:'ffffff',f:'fa-brands fa-github',d:'Turn field code into reusable components.'}
-  ],
+  outcome:['Customer runs the system unaided','Value report vs. the original baseline','Backlog and next use case agreed'],
   build:'The customer runs the system without you, the value is measured, and the next opportunity is on the table.',
   signals:['Customer ran it unaided for a week','Value report vs. original metric'],
   days:[17,20], prereq:[6],
@@ -903,16 +833,6 @@ function autoStatus(L){
 }
 const getStatus = id => { const v = +status[id]; return v>=0 && v<=3 ? v : 0; };
 
-function monogram(t){
-  return t.m || t.n.replace(/[^A-Za-z0-9 ]/g,'').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-}
-function iconHTML(t){
-  const fb = t.f
-    ? `<i class="fbk ${t.f}" style="color:#${t.c}"></i>`
-    : `<span class="fbk mono" style="color:#${t.c}">${esc(monogram(t))}</span>`;
-  if (!t.s) return `<span class="ico nos">${fb}</span>`;
-  return `<span class="ico"><img src="https://cdn.simpleicons.org/${t.s}/${t.c}" alt="" loading="lazy" onerror="this.parentNode.classList.add('fb')">${fb}</span>`;
-}
 
 /* ================= RENDER ROADMAP ================= */
 const roadmap = $('#roadmap');
@@ -920,11 +840,9 @@ const roadmap = $('#roadmap');
 function renderLayer(L, i){
   const chips = L.core.map((c,ci)=>`<span class="chip${ci>=COLLAPSED_CHIPS?' extra':''}" data-k="${esc(norm(c))}">${esc(c)}</span>`).join('')
     + (L.core.length>COLLAPSED_CHIPS ? `<span class="chip more">+${L.core.length-COLLAPSED_CHIPS} more</span>` : '');
-  const techs = L.tech.map((t,ti)=>`<span class="tech${t.alt?' alt':''}" tabindex="0" data-l="${L.id}" data-t="${ti}" data-k="${esc(norm(t.n))}">${iconHTML(t)}${esc(t.n)}</span>`).join('');
+  const outs = L.outcome.map((o,oi)=>`<li data-k="${esc(norm(o))}"><i class="fa-solid fa-circle-check"></i><span>${esc(o)}</span></li>`).join('');
   const opts = STATUSES.map((s,si)=>`<option value="${si}">${s.label}</option>`).join('');
   const next = LAYERS[i+1];
-  const std = L.tech.filter(t=>!t.alt), alt = L.tech.filter(t=>t.alt);
-  const trow = t=>`<div class="trow${t.alt?' alt':''}" data-k="${esc(norm(t.n))}">${iconHTML(t)}<div><b>${esc(t.n)}</b><span>${esc(t.d)}</span></div></div>`;
 
   const el = document.createElement('article');
   el.className = 'layer';
@@ -957,9 +875,9 @@ function renderLayer(L, i){
         <div class="chips">${chips}</div>
         <p class="print-build"><b>Build:</b> ${esc(L.build.replace(/^You should be able to /,''))}</p>
       </div>
-      <div class="l-tech">
-        <div class="sec-label"><span class="legend-key tools">TOOLS</span></div>
-        <div class="tech-grid">${techs}</div>
+      <div class="l-out">
+        <div class="sec-label"><span class="legend-key tools">OUTCOME</span>after this stage</div>
+        <ul class="out-list">${outs}</ul>
       </div>
       <span class="expand" aria-hidden="true"><i class="fa-solid fa-chevron-down"></i></span>
     </div>
@@ -969,12 +887,6 @@ function renderLayer(L, i){
           <div class="box">
             <h4><i class="fa-solid fa-list-check"></i>ACTIVITIES<span class="count">${L.core.length}</span></h4>
             <ul class="comp-list">${L.core.map((c,ci)=>`<li data-k="${esc(norm(c))}"><label class="check"><input type="checkbox" data-ck="${ck(L.id,'c',ci)}"><span>${esc(c)}</span></label></li>`).join('')}</ul>
-          </div>
-          <div class="box">
-            <h4><i class="fa-solid fa-cubes"></i>MAIN TOOLS<span class="count">${std.length}</span></h4>
-            <div class="tlist">${std.map(trow).join('')}</div>
-            ${alt.length ? `<h4 class="alt-h"><i class="fa-regular fa-circle"></i>ALTERNATIVES · AWARENESS<span class="count">${alt.length}</span></h4>
-            <div class="tlist">${alt.map(trow).join('')}</div>` : ''}
           </div>
           <div class="box build">
             <h4><i class="fa-solid fa-hammer"></i>STAGE GOAL · EXIT GATE</h4>
@@ -1105,28 +1017,6 @@ $('#resetBtn').addEventListener('click', ()=>{
   refreshStatus();
 });
 
-/* ================= TOOLTIP ================= */
-const tip = $('#tip');
-function showTip(target){
-  const L = LAYERS.find(l=>l.id===+target.dataset.l);
-  const t = L && L.tech[+target.dataset.t];
-  if (!t) return;
-  tip.innerHTML = `<b>${iconHTML(t)}${esc(t.n)}</b><span>${esc(t.d)}</span><em>STAGE ${pad(L.id)} · ${esc(L.name.toUpperCase())}</em>`;
-  tip.classList.add('show');
-  const r = target.getBoundingClientRect(), tr = tip.getBoundingClientRect();
-  let x = r.left + r.width/2 - tr.width/2;
-  x = Math.max(10, Math.min(x, window.innerWidth - tr.width - 10));
-  let y = r.top - tr.height - 10;
-  if (y < 10) y = r.bottom + 10;
-  tip.style.left = x+'px'; tip.style.top = y+'px';
-}
-const hideTip = ()=>tip.classList.remove('show');
-document.addEventListener('mouseover', e=>{ const t = e.target.closest('.tech[data-t]'); if (t) showTip(t); });
-document.addEventListener('mouseout', e=>{ const t = e.target.closest('.tech[data-t]'); if (t && !t.contains(e.relatedTarget)) hideTip(); });
-document.addEventListener('focusin', e=>{ if (e.target.matches('.tech[data-t]')) showTip(e.target); });
-document.addEventListener('focusout', e=>{ if (e.target.matches('.tech[data-t]')) hideTip(); });
-window.addEventListener('scroll', hideTip, {passive:true});
-
 /* ================= FILTER ================= */
 let activeFilter = 'all';
 $('#filters').addEventListener('click', e=>{
@@ -1149,14 +1039,14 @@ const searchInput = $('#search'), searchWrap = $('#searchWrap'), searchStatus = 
 let lastFirstHit = null, searchTimer = null;
 
 function matchLayer(L, q){
-  const hits = {core:[], tech:[], meta:false};
+  const hits = {core:[], out:[], meta:false};
   L.core.forEach(c=>{ if (norm(c).includes(q)) hits.core.push(norm(c)); });
-  L.tech.forEach(t=>{ if (norm(t.n).includes(q)) hits.tech.push(norm(t.n)); });
-  if (!hits.core.length && !hits.tech.length){
+  L.outcome.forEach(o=>{ if (norm(o).includes(q)) hits.out.push(norm(o)); });
+  if (!hits.core.length && !hits.out.length){
     hits.meta = norm(L.name).includes(q) || norm(L.desc).includes(q) || L.cats.some(c=>norm(CAT_LABEL[c]).includes(q))
-      || L.tech.some(t=>norm(t.d).includes(q));
+      || norm(L.build).includes(q);
   }
-  hits.any = hits.core.length || hits.tech.length || hits.meta;
+  hits.any = hits.core.length || hits.out.length || hits.meta;
   return hits;
 }
 
@@ -1175,7 +1065,7 @@ function applySearch(scroll){
       el.classList.add('hit','show-all');
       $$('[data-k]', el).forEach(x=>{
         const k = x.dataset.k;
-        if (h.core.includes(k) || h.tech.includes(k)) x.classList.add('match');
+        if (h.core.includes(k) || h.out.includes(k)) x.classList.add('match');
       });
     } else el.classList.add('dim');
   });
@@ -1236,13 +1126,11 @@ const TIERS = [
 function nodeHTML(n, compact){
   const L = LAYERS[n.layers[0]-1];
   const s = getStatus(L.id);
-  const icons = L.tech.filter(t=>!t.alt).slice(0, compact?5:7).map(t=>`<span class="tech" tabindex="0" data-l="${L.id}" data-t="${L.tech.indexOf(t)}" style="padding:0;border:0;background:none">${iconHTML(t)}</span>`).join('');
   return `<div class="node" data-layers="${n.layers.join(',')}" style="--acc:${L.acc}" tabindex="0" role="button" aria-label="Open module ${pad(L.id)}">
     <div class="node-ic"><i class="${n.icon}"></i></div>
     <div>
       <div class="node-t">${n.t}</div>
       <div class="node-s"><span class="lb">L${pad(L.id)}</span>${esc(L.name)}</div>
-      <div class="node-icons">${icons}</div>
     </div>
     <div class="node-status"><i class="dot" style="background:${STATUSES[s].color}"></i>${STATUSES[s].label}</div>
   </div>`;
@@ -1291,7 +1179,6 @@ function placeRail(){
   });
 }
 $('#flow').addEventListener('click', e=>{
-  if (e.target.closest('.tech')) return;
   const n = e.target.closest('.node[data-layers]'); if (!n) return;
   goToLayer(+n.dataset.layers.split(',')[0]);
 });
@@ -1306,7 +1193,6 @@ function setArch(on){
   archBtn.classList.toggle('on', on);
   archBtn.innerHTML = on ? '<i class="fa-solid fa-list"></i><span>Roadmap View</span>' : '<i class="fa-solid fa-sitemap"></i><span>Architecture View</span>';
   $('#expandAll').style.display = on ? 'none' : '';
-  hideTip();
   if (on){ renderArch(); requestAnimationFrame(placeRail); }
 }
 archBtn.addEventListener('click', ()=>{
@@ -1363,7 +1249,7 @@ $('#fflow').innerHTML = LAYERS.map((L,i)=>`<button data-id="${L.id}">${L.short}<
 $('#fflow').addEventListener('click', e=>{ const b = e.target.closest('button'); if (b) goToLayer(+b.dataset.id); });
 
 /* ================= PRINT ================= */
-$('#printBtn').addEventListener('click', ()=>{ hideTip(); refreshStatus(); window.print(); });
+$('#printBtn').addEventListener('click', ()=>{ refreshStatus(); window.print(); });
 
 /* ================= INIT ================= */
 refreshStatus();
