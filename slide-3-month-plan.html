@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Research Plan — Slide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="assets/kyanon-slide.css">
+<style>
+.slide{gap:16px}
+
+/* week 0 + rhythm strips */
+.strip{display:flex;align-items:center;gap:18px;padding:12px 22px;border-radius:12px;border:1px dashed var(--line-2);background:#FCFAFA;font-size:20px}
+.strip .lbl{flex:none;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--red-2)}
+.strip .lbl i{font-size:20px}
+.strip .items{display:flex;flex-wrap:wrap;gap:8px 22px;color:var(--ink)}
+.strip .items span{display:inline-flex;align-items:center;gap:8px}
+.strip .items i{color:var(--muted);font-size:17px}
+.strip.rhythm{border-style:solid;border-color:var(--line);background:#fff}
+.strip.rhythm .lbl{color:var(--purple)}
+
+/* phases */
+.phases{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;min-height:0}
+.phase{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.ph-head{background:var(--red);color:#fff;padding:12px 20px 12px 22px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%)}
+.phase:last-child .ph-head{clip-path:none}
+.ph-head b{font-size:25px;font-weight:700}
+.ph-head span{font-size:19px;opacity:.9;padding-right:22px;white-space:nowrap}
+.weeks{flex:1;display:flex;flex-direction:column;justify-content:space-around;padding:8px 18px}
+.wk{display:flex;align-items:flex-start;gap:14px;padding:8px 0}
+.wk .n{flex:none;width:52px;height:40px;border-radius:10px;background:var(--red-soft);color:var(--red);font-weight:700;font-size:19px;display:grid;place-items:center}
+.wk strong{display:block;font-size:22px;font-weight:700;line-height:1.2}
+.wk small{display:block;font-size:18px;color:var(--muted);line-height:1.3;margin-top:2px}
+.cp{margin:0 14px 14px;padding:12px 16px;border-radius:12px;border:2px solid var(--purple);background:#F6F2F8;display:flex;gap:12px;align-items:flex-start}
+.cp i{color:var(--purple);font-size:20px;margin-top:3px}
+.cp p{font-size:18px;line-height:1.35;color:var(--purple)}
+.cp p b{display:block;font-size:19px}
+</style>
+</head>
+<body>
+<main class="slide" id="slide">
+  <h1 class="k-title">Team Research Plan: 13 Weeks, Nov 2026 – Jan 2027</h1>
+  <p class="k-note">One plan for the whole team, <b>beginners included</b> · learn by building, apply to the <b>Godine PoC</b></p>
+  <img class="k-logo" src="assets/kyanon-logo.png" alt="Kyanon">
+
+  <div class="strip">
+    <span class="lbl"><i class="fa-solid fa-seedling"></i>Week 0 · prep for beginners</span>
+    <div class="items">
+      <span><i class="fa-brands fa-python"></i>Python basics</span>
+      <span><i class="fa-solid fa-plug"></i>HTTP, JSON &amp; APIs</span>
+      <span><i class="fa-brands fa-git-alt"></i>Git &amp; pull requests</span>
+      <span><i class="fa-brands fa-docker"></i>Docker Compose</span>
+      <span><i class="fa-solid fa-key"></i>First LLM API call</span>
+    </div>
+  </div>
+
+  <div class="phases">
+    <section class="phase">
+      <div class="ph-head"><b>1 · Foundations</b><span>Weeks 1–4</span></div>
+      <div class="weeks">
+        <div class="wk"><span class="n">W1</span><div><strong>LLM basics</strong><small>Structured output via LiteLLM + Pydantic; compare 2 models</small></div></div>
+        <div class="wk"><span class="n">W2</span><div><strong>n8n basics</strong><small>Form → LLM summary → Slack workflow</small></div></div>
+        <div class="wk"><span class="n">W3</span><div><strong>Tool calling &amp; MCP</strong><small>Agent calls a mock Godine API</small></div></div>
+        <div class="wk"><span class="n">W4</span><div><strong>RAG basics</strong><small>FAQ bot on pgvector, answers with citations</small></div></div>
+      </div>
+      <div class="cp"><i class="fa-solid fa-flag"></i><p><b>Checkpoint 1</b>Each pair demos a mini agent: n8n + LLM + RAG + 1 tool · beginners reach L1</p></div>
+    </section>
+
+    <section class="phase">
+      <div class="ph-head"><b>2 · Agentic engineering</b><span>Weeks 5–8</span></div>
+      <div class="weeks">
+        <div class="wk"><span class="n">W5</span><div><strong>LangGraph &amp; routing</strong><small>Intent router, Postgres checkpoint, human approval</small></div></div>
+        <div class="wk"><span class="n">W6</span><div><strong>Context, memory &amp; conversation</strong><small>Memory across sessions, multi-turn handling</small></div></div>
+        <div class="wk"><span class="n">W7</span><div><strong>Guardrails &amp; error handling</strong><small>Block 10 attacks; survive a provider outage</small></div></div>
+        <div class="wk"><span class="n">W8</span><div><strong>Evaluation &amp; observability</strong><small>Langfuse traces, 20-case benchmark, eval gate</small></div></div>
+      </div>
+      <div class="cp"><i class="fa-solid fa-flag"></i><p><b>Checkpoint 2</b>Agent template + 6 skill modules, benchmarked · beginners reach L2</p></div>
+    </section>
+
+    <section class="phase">
+      <div class="ph-head"><b>3 · Workflow &amp; Godine</b><span>Weeks 9–13</span></div>
+      <div class="weeks">
+        <div class="wk"><span class="n">W9</span><div><strong>FDE discovery</strong><small>Godine channels, use cases, systems, baseline</small></div></div>
+        <div class="wk"><span class="n">W10</span><div><strong>Workflow patterns &amp; multichannel</strong><small>Priority channel + Chatwoot handoff on n8n</small></div></div>
+        <div class="wk"><span class="n">W11</span><div><strong>Godine PoC end-to-end</strong><small>Real data, benchmark of ≥ 50 conversations</small></div></div>
+        <div class="wk"><span class="n">W12</span><div><strong>Deploy &amp; operate</strong><small>Staging deploy, load test, cost per conversation</small></div></div>
+        <div class="wk"><span class="n">W13</span><div><strong>Review &amp; wrap-up</strong><small>Godine demo, go / no-go, team retro</small></div></div>
+      </div>
+      <div class="cp"><i class="fa-solid fa-flag-checkered"></i><p><b>Checkpoint 3</b>Godine PoC report · Skills Library v1.0 · Framework v1.0</p></div>
+    </section>
+  </div>
+
+  <div class="strip rhythm">
+    <span class="lbl"><i class="fa-solid fa-arrows-rotate"></i>Every week</span>
+    <div class="items">
+      <span><i class="fa-solid fa-book-open"></i>Self-study 3–4 h</span>
+      <span><i class="fa-solid fa-user-group"></i>Pair lab 3–4 h: one experienced + one new</span>
+      <span><i class="fa-solid fa-chalkboard-user"></i>Friday sharing 1 h, rotating presenter</span>
+      <span><i class="fa-brands fa-github"></i>Code in one team repo</span>
+    </div>
+  </div>
+
+  <div class="k-foot"><i class="fa-solid fa-globe"></i>kyanon.digital</div>
+</main>
+<script src="assets/slide.js"></script>
+</body>
+</html>

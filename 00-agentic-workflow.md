@@ -1,63 +1,122 @@
-# 00 — AI Agentic Workflow: Toolkit & Kiến trúc tham chiếu
+# 00 — AI Agentic Workflow: Toolkit, Patterns & Kiến trúc tham chiếu
 
-> Tài liệu này là **bản đồ chuẩn bị** trước khi bắt tay xây workflow thật: liệt kê toàn bộ thành phần có thể xuất hiện trong một AI Agentic workflow, map tool cụ thể cho từng layer, và đưa ra stack khuyến nghị cho ngữ cảnh **AI Agentic + Non-tech operator + Hybrid deployment**.
+> Tài liệu này là **bản đồ chuẩn bị** trước khi xây workflow thật: các layer cần có trong một AI Agentic workflow, tool cho từng layer, **bộ workflow patterns tái sử dụng**, và stack chuẩn cho ngữ cảnh **Agentic AI + Non-tech operator + Hybrid deployment**, ưu tiên **n8n** cho orchestration và integration.
 >
-> Đọc tài liệu này **một lần** khi bắt đầu dự án mới — sau đó chỉ cần lấy tool từ đây ra dùng, không cần tìm kiếm lại.
+> Đọc **một lần** khi bắt đầu dự án mới, sau đó lấy pattern và tool từ đây ra dùng.
+>
+> Liên quan: [AI Engineer Roadmap](roadmap-ai.html) · [FDE Engagement Roadmap](roadmap-fde.html) · [Capability Matrix](capability-agentic-fde.md)
+
+---
+
+## 🎯 Tài liệu này phục vụ 3 mục tiêu
+
+| # | Mục tiêu | Đầu ra cụ thể | Phần liên quan |
+|---|---|---|---|
+| 1 | **Agentic AI — Reusable Agent Skills** | Thư viện skill dùng chung: tool calling, context & memory, routing, guardrails, evaluation, error handling; chuẩn thiết kế + chuẩn đánh giá Agent | [Agent Skills Library](#-agent-skills-library-mục-tiêu-1) |
+| 2 | **Agentic Workflow Engineering — Reusable Workflow Framework** | Stack tiêu chuẩn + bộ workflow patterns (n8n + Agent Service), chuẩn state, error handling, observability, HITL | [Layers](#layer-0--trigger--channel), [Workflow Patterns](#-workflow-patterns-mục-tiêu-2), [Chuẩn n8n](#-chuẩn-n8n) |
+| 3 | **FDE — Apply to Godine** | PoC end-to-end tích hợp đa kênh + xử lý hội thoại; số đo độ tin cậy, khả năng mở rộng, chi phí vận hành | [Godine PoC](#-fde--godine-poc-mục-tiêu-3) |
+
+Thứ tự là **1 → 2 → 3**: skill và pattern phải được build và test trên bài toán mẫu trước, Godine là nơi áp dụng, không phải nơi thử nghiệm lần đầu.
 
 ---
 
 ## 🏗️ Kiến trúc tổng thể
 
 ```
-[Non-tech UI: Form / Chat / Dashboard]
-          ↓  trigger (webhook / schedule / form submit)
-┌──────────────────────────────────────────┐
-│  n8n  ←  Workflow Orchestrator (visual)  │  self-hosted Docker
-│  routing, triggers, human-in-loop        │
-└─────────────────┬────────────────────────┘
-                  │ khi cần AI phức tạp
-                  ↓
-┌──────────────────────────────────────────┐
-│  AI Agent Service  (Python / FastAPI)    │  self-hosted
-│  LangGraph state machine                 │
-│  Anthropic Claude API ←────────────────────── cloud API
-└──────┬────────────────────┬─────────────┘
-       ↓                    ↓
-  [Qdrant]             [PostgreSQL]          self-hosted Docker
-  vector store         structured data
+[Channels: Zalo OA · Messenger · Website chat · WhatsApp · Email · Form]
+          ↓  webhook (mỗi kênh một adapter)
+┌──────────────────────────────────────────────────────┐
+│  n8n — Workflow Orchestrator (outer loop)            │  self-hosted, queue mode
+│  channel adapter → normalize → dedup/debounce        │
+│  routing · gọi Agent · gửi reply · HITL · alert      │
+└───────────────┬──────────────────────────────────────┘
+                │ HTTP (contract chuẩn, xem bên dưới)
+                ↓
+┌──────────────────────────────────────────────────────┐
+│  AI Agent Service (Python / FastAPI) — inner loop    │  self-hosted
+│  LangGraph state machine + Agent Skills Library      │
+│  LiteLLM gateway → Claude / OpenAI / local ────────────── cloud API
+│  Tools: MCP / OpenAPI → hệ thống của khách           │
+└──────┬─────────────────────┬─────────────────────────┘
+       ↓                     ↓
+ [PostgreSQL + pgvector]   [Redis]                       self-hosted
+ conversation, state,      session, lock, dedup,
+ checkpoint, audit, RAG    debounce, n8n queue
        ↑
-[Document Ingestion Pipeline]
-(upload → parse → chunk → embed → store)
+[Ingestion Pipeline: upload → Docling → chunk → embed → pgvector]
 
-[Langfuse]  ←  LLM observability            self-host hoặc cloud
+[Langfuse] ← trace + cost + eval dataset     [Chatwoot / Slack] ← human handoff & approval
 ```
 
 **Nguyên tắc thiết kế:**
-- n8n xử lý **outer loop** (trigger, routing, notification, human approval).
-- LangGraph xử lý **inner loop** (multi-step AI reasoning, tool calls, retry).
-- Mỗi layer độc lập → có thể swap từng phần mà không phá tổng thể.
-- Security guardrail áp ở **mọi boundary** (input → AI, AI → tool, AI → output).
+- **n8n = outer loop**: trigger, kết nối kênh, routing, notification, human approval, retry/alert. Non-tech đọc và chỉnh được.
+- **LangGraph = inner loop**: suy luận nhiều bước, tool call, memory, guardrail. Có test, có version, do dev quản lý.
+- **Một contract duy nhất** giữa n8n và Agent Service → đổi kênh hoặc đổi agent không ảnh hưởng phía còn lại.
+- Mỗi layer độc lập → swap từng phần mà không phá tổng thể.
+- Guardrail áp ở **mọi boundary**: input → AI, AI → tool, AI → output.
+- Mọi run có **một trace_id** xuyên suốt n8n execution → Agent Service → Langfuse.
+
+### Khi nào dùng n8n AI Agent node, khi nào gọi Agent Service?
+
+| Tình huống | Dùng | Lý do |
+|---|---|---|
+| 1 LLM call: phân loại, tóm tắt, trích xuất có schema | **n8n** (Basic LLM Chain / AI Agent node) | Nhanh, non-tech tự sửa prompt |
+| Agent ≤ 3 tool, không cần memory dài, không cần eval nghiêm | **n8n AI Agent node** | Đủ dùng cho PoC nội bộ |
+| Nhiều bước, nhánh điều kiện, HITL giữa chừng, resume sau lỗi | **Agent Service (LangGraph)** | Checkpoint, test được từng node |
+| Cần benchmark / eval gate, multi-tenant, tool có side-effect | **Agent Service** | Kiểm soát version, guardrail, quyền |
+| Hội thoại khách hàng production (như Godine) | **Agent Service**, n8n lo kênh | Chất lượng phải đo và chặn release được |
+
+### Contract n8n ↔ Agent Service
+
+```json
+POST /agent/run
+{
+  "trace_id": "n8n-exec-12345",
+  "tenant_id": "godine",
+  "channel": "zalo",
+  "conversation_id": "conv_8f2a",
+  "user": { "id": "u_123", "channel_user_id": "zalo:987" },
+  "messages": [{ "role": "user", "text": "Còn bàn tối nay 7h không?", "ts": "2026-10-23T10:00:00Z" }],
+  "metadata": { "idempotency_key": "zalo:msg:abc" }
+}
+→ 200
+{
+  "reply": [{ "type": "text", "text": "..." }],
+  "action": "reply | handoff | need_approval | none",
+  "state": { "intent": "booking", "slots": { "time": "19:00" } },
+  "usage": { "input_tokens": 1200, "output_tokens": 180, "cost_usd": 0.004 }
+}
+```
 
 ---
 
-## Layer 0 — TRIGGER / INPUT
+## Layer 0 — TRIGGER / CHANNEL
 
-Điểm khởi động workflow — _ai/cái gì kích hoạt?_
+Điểm khởi động workflow — _cái gì kích hoạt?_
 
 | Loại trigger | Tool cụ thể |
 |---|---|
-| **HTTP Webhook** | n8n Webhook node · FastAPI endpoint · Temporal signal |
-| **Schedule / Cron** | n8n Cron node · Airflow DAG schedule · Hermes cronjob · APScheduler |
-| **Form submission** | n8n Form trigger · Typeform · Google Forms webhook · Tally.so |
-| **Email inbound** | Gmail API (watch) · SendGrid Inbound Parse · Postmark inbound |
-| **Chat message** | Slack Events API · Teams Bot Framework · Telegram Bot API · Discord bot |
-| **File upload** | n8n File trigger · S3 event notification · Google Drive watch |
-| **Database change (CDC)** | Debezium · PostgreSQL LISTEN/NOTIFY · Supabase realtime |
-| **Event stream** | Apache Kafka · RabbitMQ · Redis Streams · AWS EventBridge |
-| **Voice / Speech** | Whisper (OpenAI/local) · Deepgram · AssemblyAI |
-| **UI button action** | n8n wait-for-webhook resume · Slack interactive message button |
+| **HTTP Webhook** | n8n Webhook node · FastAPI endpoint |
+| **Chat trên web / app** | n8n Chat Trigger · Chatwoot widget · custom widget |
+| **Kênh hội thoại** | Zalo OA API · Meta Messenger / Instagram (Graph API) · WhatsApp Business Cloud API · Telegram Bot API |
+| **Omnichannel inbox** | **Chatwoot** (open-source: website, Messenger, Instagram, WhatsApp, Telegram, email, API channel) |
+| **Schedule / Cron** | n8n Schedule Trigger · APScheduler · Celery beat |
+| **Form submission** | n8n Form Trigger · Google Forms · Tally |
+| **Email inbound** | n8n Email (IMAP) Trigger · Gmail API watch · SendGrid Inbound Parse |
+| **Nội bộ** | Slack Events API · Teams Bot Framework |
+| **File upload** | Google Drive watch · S3 / MinIO event |
+| **Database change** | PostgreSQL LISTEN/NOTIFY · Debezium · Supabase realtime |
+| **Event stream** | RabbitMQ · Redis Streams · Kafka |
+| **Voice** | Whisper (local) · Deepgram · AssemblyAI |
 
-> Stack khuyến nghị: **n8n Webhook + n8n Cron + n8n Form trigger** — non-tech cấu hình được, không cần code.
+**Quy tắc cho kênh hội thoại:**
+- Mỗi kênh một **adapter sub-workflow**: verify chữ ký webhook → map payload về schema chung `{channel, channel_user_id, message_id, text, attachments, ts}`.
+- **Dedup** theo `channel + message_id` (Redis `SET NX`, TTL 24h): nền tảng có thể gửi lại webhook.
+- **Debounce** 2–4 giây: khách hay gửi nhiều tin liên tiếp, gom lại rồi mới gọi agent một lần.
+- Trả `200` cho webhook ngay, xử lý bất đồng bộ: nhiều nền tảng timeout và retry nếu phản hồi chậm.
+- Tôn trọng giới hạn của từng nền tảng (cửa sổ trả lời, template message, rate limit): kiểm tra tài liệu kênh trước khi thiết kế.
+
+> Stack khuyến nghị: **n8n Webhook** cho từng kênh + **Chatwoot** khi cần inbox chung và chuyển cho nhân viên.
 
 ---
 
@@ -67,112 +126,92 @@ Não điều phối — _ai quyết định thứ tự chạy?_
 
 | Loại | Tool cụ thể | Phù hợp |
 |---|---|---|
-| **Visual / No-code** | **n8n** · Make (Integromat) · Zapier | Non-tech operator, business process |
-| **AI state machine** | **LangGraph** · LlamaIndex Workflows | Complex agentic flow, có nhánh điều kiện |
-| **Code-based DAG** | Apache Airflow · Prefect · Dagster | Data engineer, ML pipeline |
-| **Durable / long-running** | **Temporal** · AWS Step Functions | Workflow chạy ngày/tuần, cần resume sau lỗi |
-| **Multi-agent conversation** | AutoGen · CrewAI | Nhiều agent bàn luận để ra quyết định |
-| **Kubernetes-native** | Argo Workflows · Kubeflow Pipelines | Infra team, container scale |
+| **Visual / Low-code** | **n8n** · Make · Zapier | Integration, business process, non-tech vận hành |
+| **AI state machine** | **LangGraph** · LlamaIndex Workflows | Agentic flow có nhánh, checkpoint, HITL |
+| **Durable / long-running** | Temporal · AWS Step Functions | Workflow chạy ngày/tuần, cần exactly-once |
+| **Code-based DAG** | Airflow · Prefect · Dagster | Data / ML pipeline |
+| **Multi-agent** | LangGraph supervisor · CrewAI · AutoGen | Nhiều agent chia việc |
 
-> Stack khuyến nghị: **n8n** (visual outer loop) + **LangGraph** (AI inner loop).
+> Stack khuyến nghị: **n8n** (outer loop) + **LangGraph** (inner loop). Chỉ cân nhắc Temporal khi workflow kéo dài nhiều ngày và n8n Wait node không đủ tin cậy.
 
 ---
 
 ## Layer 2 — LLM / AI BRAIN
 
-Thực thể suy luận — _ai thực sự "nghĩ"?_
-
-### 2a. LLM Provider
+### 2a. LLM Provider (qua LiteLLM gateway)
 
 | Provider | Model gợi ý | Dùng cho |
 |---|---|---|
-| **Anthropic** | claude-sonnet-4-6 · claude-haiku-4-5 | Reasoning phức tạp · batch rẻ |
-| **OpenAI** | GPT-4o · GPT-4o-mini | Vision · function calling |
-| **Google** | Gemini 2.0 Flash · Gemini 1.5 Pro | Multimodal · long context rẻ |
-| **Meta / Local** | LLaMA 3.3 70B via Ollama · llama.cpp | On-prem, không ra internet |
-| **Mistral** | Mistral Large · Codestral | Code-heavy task |
-| **DeepSeek** | DeepSeek-V3 · R1 | Reasoning, rẻ |
+| **Anthropic** | `claude-sonnet-5-5` · `claude-haiku-5-5` · `claude-opus-5-5` | Reasoning + tool use · tác vụ nhanh, rẻ · bài khó |
+| **OpenAI** | GPT (bản mới nhất) · bản mini | Mặc định của AI Roadmap, function calling |
+| **Google** | Gemini Pro / Flash | Multimodal, long context rẻ |
+| **Local** | Qwen / Llama qua Ollama hoặc vLLM | On-prem, dữ liệu không ra ngoài |
 
-> Stack khuyến nghị: **claude-sonnet-4-6** (reasoning) + **claude-haiku-4-5** (batch/simple). Bắt buộc bật **prompt caching** cho system prompt > 1024 token (xem skill `claude-api`).
+- **Luôn gọi qua LiteLLM**: đổi model bằng config, có fallback khi provider lỗi, gom cost về một chỗ.
+- **Model routing**: model nhỏ cho phân loại intent / trích xuất slot, model lớn cho trả lời phức tạp.
+- Bật **prompt caching** cho system prompt + tool definitions dài: giảm cost và latency đáng kể với hội thoại nhiều lượt.
+- Chọn model bằng benchmark (xem [Layer 9](#layer-9--observability--evaluation)), không chọn theo cảm tính.
 
 ### 2b. Agent Framework
 
 | Framework | Đặc điểm | Phù hợp |
 |---|---|---|
-| **LangGraph** | State machine, có checkpoint, human-in-loop | Complex multi-step agentic |
-| **LangChain** | Tool-use chains, nhiều integration | Prototype nhanh |
-| **CrewAI** | Role-based multi-agent (Researcher / Writer / Critic) | Task cần nhiều góc nhìn |
-| **AutoGen (Microsoft)** | Conversational multi-agent | Debate / critique loop |
-| **Pydantic AI** | Type-safe, lightweight, production-ready | Python agent đơn giản |
-| **Smolagents (HuggingFace)** | Code agent: tự viết Python rồi tự chạy | Data analysis tự động |
-| **Haystack** | Pipeline-based, NLP-heavy | RAG, document QA |
-| **LlamaIndex** | RAG-first, data connectors phong phú | Knowledge base agent |
+| **LangGraph** | State machine, checkpoint, `interrupt()` cho HITL | Agent production nhiều bước |
+| **Pydantic AI** | Type-safe, gọn | Agent đơn giản, structured output |
+| **LlamaIndex** | RAG-first, nhiều connector | Knowledge agent |
+| **n8n AI Agent node** | Visual, dựa trên LangChain | PoC nhanh, agent ít tool |
+| **CrewAI / AutoGen** | Role-based / hội thoại multi-agent | Thử nghiệm, ít dùng cho production |
 
-> Stack khuyến nghị: **LangGraph** cho workflow có nhánh phức tạp. **Pydantic AI** cho agent đơn giản cần production-safe.
+> Stack khuyến nghị: **LangGraph** cho Agent Service, **Pydantic** cho mọi schema input/output/tool.
 
 ---
 
-## Layer 3 — MEMORY
+## Layer 3 — STATE & MEMORY
 
-Agent nhớ gì, nhớ ở đâu?
+Tách rõ **workflow state** (workflow đang ở bước nào) và **agent memory** (agent nhớ gì về khách).
 
-| Loại memory | Tool cụ thể | Đặc điểm |
+| Loại | Tool | Ghi chú |
 |---|---|---|
-| **Short-term (session)** | In-context messages · Redis (TTL) | Mất sau session |
-| **Long-term semantic (RAG)** | **Qdrant** · Weaviate · Chroma · Pinecone | Search bằng meaning (vector) |
-| **Long-term structured** | PostgreSQL · SQLite · Supabase | Query exact, relational |
-| **Episodic (conversation history)** | **Zep** · Mem0 · PostgreSQL table | Nhớ cuộc hội thoại cũ theo user |
-| **Working memory (scratchpad)** | LangGraph state object · Redis hash | Truyền dữ liệu giữa các bước trong run |
-| **Shared agent memory** | Redis pub/sub · PostgreSQL shared table | Nhiều agent dùng chung một state |
+| **Workflow execution state** | n8n execution DB (PostgreSQL) | Do n8n quản lý, không dùng làm nguồn dữ liệu nghiệp vụ |
+| **Conversation state** | PostgreSQL: `conversation`, `message`, `channel_identity` | Nguồn sự thật của hội thoại, mọi kênh |
+| **Agent run state / checkpoint** | LangGraph Postgres checkpointer | Resume sau crash hoặc sau bước approve |
+| **Short-term (session)** | LangGraph state · Redis (TTL) | N tin gần nhất + tóm tắt hội thoại |
+| **Long-term theo user** | Mem0 · bảng `user_profile` / `user_memory` | Sở thích, lịch sử; có TTL và read/write policy |
+| **Lock / dedup / debounce** | Redis | Một conversation chỉ có một run tại một thời điểm |
+| **Long-term semantic (RAG)** | PostgreSQL + **pgvector** | Cùng DB, ít hạ tầng hơn; Qdrant khi vượt vài triệu vector |
 
-> Stack khuyến nghị: **Redis** (session, TTL 24h) + **Qdrant** (long-term semantic).
+**Quy tắc:**
+- **Cách ly theo tenant / user** ở mọi bảng và mọi query (`tenant_id` bắt buộc).
+- **Liên kết danh tính đa kênh**: một khách có thể nhắn từ Zalo và Messenger → bảng `channel_identity` map về một `customer_id` (chỉ merge khi có bằng chứng, ví dụ số điện thoại đã xác minh).
+- **Context budget**: giữ N tin gần nhất + bản tóm tắt; cắt gọn tool result trước khi đưa vào context.
+
+> Stack khuyến nghị: **PostgreSQL (+pgvector) + Redis** cho tất cả; thêm Mem0 khi cần memory dài hạn theo user.
 
 ---
 
 ## Layer 4 — RAG / KNOWLEDGE PIPELINE
 
-Xử lý tài liệu → đưa vào agent có thể tìm kiếm.
-
 ```
-Ingest                   Process                  Store          Retrieve
-──────────────────────────────────────────────────────────────────────────
-File upload (PDF/DOCX)   Parse: PyMuPDF           Qdrant         Similarity search
-Web crawl (Firecrawl)    Chunk: RecursiveChar      Weaviate       Hybrid (vector+BM25)
-Google Drive watch        TextSplitter (500tok)    pgvector       MMR (diversity)
-DB snapshot              Embed: text-embed-3-small Chroma         Re-ranking (Cohere)
-                          hoặc BGE M3 (local)      Pinecone       Contextual compress
+Ingest                  Process                     Store              Retrieve
+─────────────────────────────────────────────────────────────────────────────────
+File upload (PDF/DOCX)  Parse: Docling / MarkItDown  PostgreSQL         Hybrid: vector + FTS
+Google Drive watch      Chunk: theo heading/câu      + pgvector         Rerank: BGE Reranker
+Web crawl (Firecrawl)   Embed: text-embedding-3-     (Qdrant khi        Filter: tenant + ACL
+DB / API snapshot         small hoặc BGE-M3 (local)    scale lớn)        Citation trong câu trả lời
 ```
 
-### Parser / Converter
-
-| Tool | Dùng cho |
-|---|---|
-| **MarkItDown** (Microsoft) | Convert PDF/DOCX/XLSX/PPTX/HTML → Markdown |
-| **PyMuPDF** | PDF extract text, table, image |
-| **marker** | PDF scan/phức tạp → markdown chất lượng cao |
-| **Unstructured.io** | Tổng hợp nhiều định dạng, cloud hoặc local |
-| **Docling** (IBM) | PDF/DOCX với table structure |
-| **LlamaParse** | Cloud, chất lượng cao, trả phí |
-| **Tesseract / PaddleOCR** | OCR ảnh scan |
-
-### Chunking
-
-| Tool | Ghi chú |
-|---|---|
-| **LangChain RecursiveCharacterTextSplitter** | Mặc định, tốt cho hầu hết văn bản |
-| **LlamaIndex SentenceSplitter** | Giữ nguyên câu, tốt cho QA |
-| **Semantic chunking** (embedding-based) | Chunk theo ý nghĩa, không theo ký tự |
-
-### Embedding Model
-
-| Model | Loại | Ghi chú |
+| Bước | Tool | Ghi chú |
 |---|---|---|
-| `text-embedding-3-small` | Cloud (OpenAI) | Cân bằng giá/chất lượng |
-| `text-embedding-3-large` | Cloud (OpenAI) | Chất lượng cao hơn, đắt hơn |
-| `BGE-M3` | Local (HuggingFace) | Đa ngôn ngữ, tốt cho tiếng Việt |
-| `E5-large` | Local | Tốt cho retrieval |
+| **Parse** | **Docling** · MarkItDown · marker · PaddleOCR | Docling giữ cấu trúc bảng; OCR cho ảnh scan |
+| **Chunk** | LlamaIndex SentenceSplitter · chunk theo heading | 300–800 token, giữ metadata nguồn |
+| **Embed** | `text-embedding-3-small` · **BGE-M3** (local, tốt cho tiếng Việt) | Cố định một model cho một index |
+| **Store** | PostgreSQL + pgvector · Qdrant | Index kèm `tenant_id`, `doc_id`, `acl` |
+| **Retrieve** | Hybrid (vector + PostgreSQL FTS) + BGE Reranker | Đo recall@k trước và sau mỗi thay đổi |
 
-> Stack khuyến nghị: **MarkItDown** → **RecursiveCharacterTextSplitter** → **text-embedding-3-small** → **Qdrant**.
+- **Ingest tăng dần**: hash nội dung, chỉ embed lại phần đổi.
+- Dữ liệu thay đổi liên tục (giá, tồn kho, lịch trống) **không đưa vào RAG**: gọi API qua tool để có số liệu thật.
+
+> Stack khuyến nghị: **Docling → chunk theo heading → text-embedding-3-small / BGE-M3 → pgvector → hybrid + rerank** (đồng bộ với AI Roadmap Level 02–04).
 
 ---
 
@@ -180,234 +219,297 @@ DB snapshot              Embed: text-embed-3-small Chroma         Re-ranking (Co
 
 Những gì agent **có thể làm** với thế giới bên ngoài.
 
-### 5a. Search & Web
+**Chuẩn tool (áp cho mọi tool):**
+- Expose qua **MCP server** hoặc **OpenAPI**; argument typed bằng Pydantic; mô tả tool rõ khi nào dùng / không dùng.
+- Phân loại **read** và **write**: tool write (đặt chỗ, tạo đơn, gửi tin) phải **idempotent** (idempotency key) và qua HITL hoặc policy cho phép.
+- Chạy với **quyền của người dùng / tenant**, secrets không bao giờ nằm trong prompt.
+- Trả kết quả gọn, có cấu trúc; lỗi trả về dạng agent hiểu được (`{"error": "slot_unavailable", "suggest": [...]}`), không trả stack trace.
+- n8n có thể đóng vai **MCP server** (MCP Server Trigger) để agent gọi các workflow có sẵn làm tool, hoặc **MCP client** để n8n AI Agent node dùng tool bên ngoài.
 
 | Nhóm | Tool cụ thể |
 |---|---|
-| **Web search** | Tavily API · Serper API · Brave Search · Exa · DuckDuckGo (free) |
-| **Web scraping** | Playwright · Puppeteer · Firecrawl · Jina Reader · BeautifulSoup |
-| **Academic search** | Arxiv API · Semantic Scholar · PubMed |
-| **News** | NewsAPI · GDELT · RSS parser |
-
-> Khuyến nghị: **Tavily** (AI-optimized, clean output) + **Playwright** (browser thật khi cần login).
-
-### 5b. Code Execution
-
-| Tool | Loại | Ghi chú |
-|---|---|---|
-| **E2B** | Cloud sandbox | Safe, isolate, hỗ trợ nhiều ngôn ngữ |
-| **Modal** | Cloud serverless | Scale nhanh, Python-first |
-| **Daytona** | Self-hosted sandbox | On-prem code execution |
-| **Jupyter kernel** | Local | Via nbformat, cần guardrail |
-| **smolagents CodeAgent** | Agent tự viết + chạy Python | Cần sandbox bao bọc bên ngoài |
-
-> ⚠️ Không cho agent chạy code trực tiếp qua `subprocess` không có sandbox — xem guardrail ở Layer 8.
-
-### 5c. File & Document
-
-| Nhóm | Tool cụ thể |
-|---|---|
-| **PDF** | PyMuPDF · pdfplumber · marker · LlamaParse |
-| **Office** | MarkItDown · python-docx · openpyxl · pandas |
-| **OCR** | Tesseract · PaddleOCR · Google Vision API · Azure Form Recognizer |
-| **File storage** | Local FS · Google Drive API · OneDrive · S3 / MinIO · Dropbox |
-| **Convert → Markdown** | MarkItDown · Pandoc · marker |
-
-### 5d. Database
-
-| Loại | Tool cụ thể |
-|---|---|
-| **SQL** | PostgreSQL (psycopg2/asyncpg) · MySQL · SQLite · Supabase |
-| **NoSQL** | MongoDB · Redis · DynamoDB |
-| **Analytics / OLAP** | DuckDB · BigQuery · ClickHouse |
-| **ORM** | SQLAlchemy · Prisma · Tortoise ORM |
-
-### 5e. Communication & Notification
-
-| Kênh | Tool cụ thể |
-|---|---|
-| **Slack** | Slack SDK · Slack Bolt · n8n Slack node |
-| **Email** | Gmail API · SendGrid · Resend · SMTP (smtplib) |
-| **Teams** | MS Teams Bot Framework · n8n Teams node |
-| **Telegram** | python-telegram-bot · Telegraf |
-| **SMS** | Twilio · Vonage |
-| **Push notification** | Firebase FCM · OneSignal |
-
-### 5f. Calendar & Productivity
-
-| Tool | Cụ thể |
-|---|---|
-| **Calendar** | Google Calendar API · Microsoft Graph (Outlook Calendar) |
-| **Task / Project** | Linear API · Jira API · Asana API · Notion API |
-| **Spreadsheet** | Google Sheets API · Excel (Office 365 API) · Airtable API |
-| **Docs** | Google Docs API · Notion API · Confluence API |
-
-### 5g. Image & Media
-
-| Nhóm | Tool cụ thể |
-|---|---|
-| **Generate image** | DALL-E 3 · Stable Diffusion (local) · Flux · Midjourney API |
-| **Analyze image** | Claude Vision · GPT-4o Vision · Google Vision API |
-| **Speech → Text** | Whisper (local/OpenAI) · Deepgram · AssemblyAI |
-| **Text → Speech** | ElevenLabs · OpenAI TTS · Coqui TTS (local) |
-| **Video** | FFmpeg · MoviePy · Runway API |
-
-### 5h. External APIs & Business Systems
-
-| Nhóm | Tool cụ thể |
-|---|---|
-| **CRM** | HubSpot API · Salesforce API · Zoho CRM |
-| **Payment** | Stripe API · PayPal API · VNPay |
-| **Maps / Geo** | Google Maps API · OSRM · OpenStreetMap Nominatim |
-| **HR / Payroll** | BambooHR · Workday API |
-| **ERP** | SAP API · Odoo API |
-
-### 5i. DevOps & Infrastructure
-
-| Tool | Cụ thể |
-|---|---|
-| **Git** | GitHub API (PyGithub) · GitLab API · `gh` CLI |
-| **CI/CD trigger** | GitHub Actions API · Jenkins API |
-| **Container** | Docker SDK (Python) · Kubernetes Python client |
-| **Cloud** | AWS SDK (boto3) · GCP client libs · Azure SDK |
+| **Search & Web** | Tavily · Exa · Brave Search · Firecrawl · Jina Reader · Playwright |
+| **Code execution** | E2B · Daytona (self-hosted) · Modal — luôn chạy trong sandbox, không `subprocess` trực tiếp |
+| **File & Document** | Docling · MarkItDown · PyMuPDF · openpyxl · Google Drive API · S3 / MinIO |
+| **Database** | PostgreSQL (asyncpg) · DuckDB · text-to-SQL chỉ đọc, kiểm tra bằng SQLGlot |
+| **Communication** | Zalo OA API · Messenger · WhatsApp · Slack · Email (SendGrid / Resend / SMTP) · Twilio SMS |
+| **Productivity** | Google Calendar / Sheets · Microsoft Graph · Notion · Jira · Airtable |
+| **Business systems** | CRM (HubSpot / Salesforce / Zoho) · POS / booking của khách · ERP (Odoo / SAP) · thanh toán (VNPay / MoMo / Stripe) |
+| **Image & Media** | Claude / GPT Vision · Whisper · ElevenLabs · FFmpeg |
+| **DevOps** | GitHub API · Docker SDK · AWS SDK (boto3) |
 
 ---
 
 ## Layer 6 — HUMAN IN THE LOOP
 
-Agent dừng lại, chờ người duyệt trước khi tiếp tục.
-
-| Cơ chế | Tool cụ thể | Cách hoạt động |
+| Cơ chế | Tool | Cách hoạt động |
 |---|---|---|
-| **Slack approval** | Slack interactive message | Agent gửi tin + 2 nút Approve/Reject → webhook resume n8n |
-| **Email approval** | SendGrid + token link | Agent gửi email link có token → click → resume |
-| **Form approval** | n8n wait node + Form trigger | Agent tạm dừng → non-tech điền form → workflow tiếp tục |
-| **Dashboard review** | Retool · Appsmith · custom Next.js | Non-tech review batch, approve/reject nhiều items |
-| **Interrupt trong agent** | LangGraph `interrupt()` | Dừng giữa step, serialize state, resume sau |
-| **Durable human task** | Temporal human task activity | Workflow suspend indefinitely, wake khi có response |
+| **Handoff hội thoại** | **Chatwoot** · inbox của khách | Agent gắn nhãn `handoff`, chuyển cuộc hội thoại cho nhân viên, agent ngừng trả lời đến khi được trả lại |
+| **Slack / Teams approval** | Slack interactive message | Gửi tin + nút Approve/Reject → webhook resume n8n Wait node |
+| **Form approval** | n8n Wait node (On Form Submitted) | Workflow tạm dừng → người duyệt điền form → chạy tiếp |
+| **Email approval** | Link có token | Click link → resume workflow |
+| **Interrupt trong agent** | LangGraph `interrupt()` | Dừng giữa graph, lưu checkpoint, resume khi có quyết định |
+| **Review hàng loạt** | Appsmith · Retool · Langfuse annotation | Duyệt nhiều item, gắn nhãn chất lượng |
 
-> Khuyến nghị: **Slack button + n8n wait node** — không cần build UI riêng, non-tech quen Slack.
+**Khi nào bắt buộc HITL / handoff:**
+- Tool có side-effect tiền bạc hoặc không hoàn tác được.
+- Agent không đủ tự tin (confidence thấp, hỏi lại > 2 lần, ngoài phạm vi).
+- Khách phàn nàn, yêu cầu gặp người, chủ đề nhạy cảm.
+- Có **timeout**: không ai duyệt trong X phút → nhắc lại hoặc trả lời mặc định an toàn.
+
+> Khuyến nghị: **Chatwoot** cho hội thoại khách hàng, **Slack + n8n Wait node** cho phê duyệt nội bộ.
 
 ---
 
 ## Layer 7 — GUARDRAILS / SECURITY
 
-Tham chiếu chi tiết: [05-security-guardrails.md](./05-security-guardrails.md)
-
 | Mục đích | Tool cụ thể |
 |---|---|
-| **PII detection & redact** | Microsoft Presidio · Guardrails AI · custom `pii-guard.ps1` (đã có) |
-| **Output filter / toxic** | Guardrails AI validators · Llama Guard · NeMo Guardrails (NVIDIA) |
-| **Dangerous command block** | `block-dangerous.py` + `dcg.exe` (đã có) |
-| **Rate limiting** | FastAPI `slowapi` · Kong gateway · nginx `limit_req` |
-| **Auth & AuthZ** | Keycloak (self-hosted) · JWT (FastAPI) · Clerk · Supabase Auth |
-| **Secrets management** | HashiCorp Vault · Doppler · Docker secrets / `.env` |
-| **Input schema validation** | Pydantic v2 · Zod (TypeScript) |
+| **PII detection & redact** | Microsoft Presidio (thêm recognizer cho SĐT / CCCD Việt Nam) |
+| **Prompt injection / jailbreak** | Llama Guard · NeMo Guardrails · Guardrails AI · classifier riêng |
+| **Output filter** | Pydantic schema · rule nghiệp vụ (không hứa giảm giá, không bịa giá) · grounding check với RAG |
+| **Tool permission** | Allowlist tool theo agent + theo tenant; tool write cần approval |
+| **Rate limiting** | `slowapi` (FastAPI) · nginx `limit_req` · giới hạn theo user / kênh |
+| **Auth** | Keycloak · JWT · n8n webhook Header Auth · verify chữ ký webhook của từng kênh |
+| **Secrets** | n8n Credentials · Docker secrets · Vault / Doppler |
+| **Compliance** | Audit log, retention, data residency, Nghị định 13/2023 về bảo vệ dữ liệu cá nhân |
 
 **Thứ tự áp guardrail:**
 ```
-User input → [PII check] → Agent → [Tool permission check] → Tool
-                                 → [Output filter] → Response
+User input → [verify kênh + rate limit] → [PII redact + injection check] → Agent
+Agent → [tool permission + approval] → Tool
+Agent → [schema + business rule + grounding] → Reply → Channel
 ```
 
 ---
 
-## Layer 8 — OBSERVABILITY
+## Layer 8 — ERROR HANDLING & RELIABILITY
 
-Hiểu chuyện gì đang xảy ra bên trong agent.
+| Lỗi | Cách xử lý chuẩn |
+|---|---|
+| **Webhook gửi lặp** | Dedup theo `message_id` (Redis), idempotency key cho mọi tool write |
+| **LLM provider lỗi / chậm** | Retry có backoff (tối đa 2–3 lần) → fallback model qua LiteLLM → câu trả lời an toàn + handoff |
+| **Tool / API khách lỗi** | Timeout rõ ràng, retry với lỗi tạm thời, không retry lỗi nghiệp vụ; agent báo khách bằng câu tự nhiên |
+| **Agent lặp vô hạn** | Max steps, ngân sách token / cost, timeout mỗi run |
+| **Output sai schema** | Validate Pydantic → retry 1 lần kèm lỗi → fallback |
+| **Workflow fail** | n8n **Error Trigger** workflow chung → ghi bảng `failed_run` (dead-letter) → alert Slack kèm trace_id |
+| **Hai run chồng nhau** | Lock theo `conversation_id` (Redis) |
+| **Mất kết nối giữa chừng** | LangGraph checkpoint → resume; n8n retry node với `Retry On Fail` |
+
+**Nguyên tắc:** khách **không bao giờ** nhận lỗi kỹ thuật hoặc im lặng. Luôn có câu trả lời dự phòng và đường chuyển cho người.
+
+---
+
+## Layer 9 — OBSERVABILITY & EVALUATION
 
 | Mục đích | Tool cụ thể |
 |---|---|
-| **LLM call tracing** | **Langfuse** (open-source) · LangSmith · Arize Phoenix · Helicone |
-| **App metrics** | Prometheus + Grafana · Datadog · New Relic |
-| **Log aggregation** | Loki + Grafana · ELK Stack · Axiom |
-| **Error tracking** | Sentry · Bugsnag |
-| **Cost tracking** | Langfuse cost tab · Helicone cost dashboard |
-| **Distributed tracing** | OpenTelemetry → Jaeger / Grafana Tempo |
+| **LLM / agent tracing** | **Langfuse** (self-hosted) · LangSmith · Arize Phoenix |
+| **Workflow log** | n8n Executions · Error Trigger · log stream sang Loki |
+| **Metrics & alert** | Prometheus + Grafana · Uptime Kuma |
+| **Error tracking** | Sentry |
+| **Cost** | Langfuse cost · LiteLLM spend tracking |
+| **Evaluation** | **DeepEval** · Langfuse datasets & scores · benchmark nội bộ |
 
 ```python
-# Tích hợp Langfuse vào agent — 2 dòng
-from langfuse.anthropic import anthropic  # drop-in replacement
+# Trace mọi LLM call qua LiteLLM + Langfuse, gắn trace_id từ n8n
+import litellm
+from langfuse import observe
+
+litellm.callbacks = ["langfuse"]  # đọc LANGFUSE_* từ env
 
 @observe()
-def agent_step(prompt: str):
-    return anthropic.messages.create(...)
+def agent_step(messages, trace_id: str):
+    return litellm.completion(
+        model="anthropic/claude-sonnet-5-5",
+        messages=messages,
+        metadata={"trace_id": trace_id},
+    )
 ```
 
-> Khuyến nghị: **Langfuse self-hosted** — open-source, đủ dùng, non-tech có dashboard xem cost/latency.
+**Số đo chuẩn cho mọi workflow:**
+- **Chất lượng**: task success rate, độ đúng tool call, tỉ lệ handoff, CSAT / feedback.
+- **Tin cậy**: tỉ lệ run lỗi, tỉ lệ fallback, pass^k (ổn định qua k lần chạy).
+- **Hiệu năng**: p50 / p95 latency từ lúc nhận tin đến lúc trả lời.
+- **Chi phí**: cost / message, cost / conversation, cost hạ tầng / tháng.
 
+**Eval gate**: benchmark nội bộ ≥ 50 case từ hội thoại thật (đã redact PII), chạy lại mỗi lần đổi prompt / model / workflow; điểm tụt dưới ngưỡng thì không release.
+
+> Khuyến nghị: **Langfuse self-hosted + DeepEval**; trace_id = n8n execution id để nối hai bên.
 
 ---
 
-## 📦 Stack khuyến nghị (AI Agentic + Non-tech + Hybrid)
+## Layer 10 — DEPLOY & OPERATE
+
+Đưa toàn bộ stack lên môi trường thật và giữ nó chạy ổn định.
+
+| Mục đích | Tool cụ thể |
+|---|---|
+| **Đóng gói** | Docker · Docker Compose (PoC, staging) |
+| **Hạ tầng** | Terraform · VM / ECS / EKS của khách hoặc của Kyanon |
+| **CI/CD** | GitHub Actions: test → **eval gate** → build image → deploy |
+| **Workflow n8n** | Export JSON vào Git (`n8n export:workflow`), import theo môi trường |
+| **DB migration** | Alembic (Agent Service) · có version, chạy trong pipeline |
+| **Secrets & config** | `.env` theo môi trường · Vault / Doppler |
+| **Backup** | `pg_dump` định kỳ cho PostgreSQL (dữ liệu nghiệp vụ + n8n DB) |
+| **Scale** | Thêm n8n worker (queue mode) · nhân bản Agent Service · Redis |
+
+**Quy tắc:**
+- **Một lệnh deploy, một lệnh rollback**, và đã chạy thử rollback ít nhất một lần.
+- Luôn qua **staging** trước **prod**; prod chỉ nhận image đã qua eval gate.
+- Có **runbook**: khởi động lại, thêm worker, đổi model, xử lý `failed_run`.
+- Theo dõi **cost hạ tầng + cost LLM** hàng tháng, so với ước tính ở Discovery.
+
+> Khuyến nghị: **Docker Compose** cho PoC, **Terraform + GitHub Actions** khi lên hạ tầng khách (đồng bộ AI Roadmap Level 11 và FDE Roadmap stage Deploy).
+
+---
+
+## 🧩 Agent Skills Library (Mục tiêu 1)
+
+Mỗi skill là một **module dùng lại được** trong Agent Service, có chuẩn thiết kế và test riêng. Dự án mới chỉ cấu hình, không viết lại.
+
+| Skill | Module tái sử dụng | Chuẩn thiết kế | Cách đánh giá |
+|---|---|---|---|
+| **Tool calling** | `tools/` registry + base class Pydantic, MCP client | Typed args, read/write tách bạch, idempotent, lỗi có cấu trúc | % tool call đúng tên + đúng args trên benchmark |
+| **Context & memory** | `memory/` short-term + summary + long-term theo user | Context budget, TTL, cách ly tenant | Token/run trước và sau; test recall qua session; test cách ly 2 tenant |
+| **Routing** | `router/` intent classifier + model router | Model nhỏ phân loại, có nhánh `unknown` → hỏi lại / handoff | Accuracy intent trên tập có nhãn; cost tiết kiệm được |
+| **Guardrails** | `guards/` input / tool / output | Áp ở 3 boundary, rule nghiệp vụ dạng config | Red-team ≥ 20 case: injection, PII leak, hứa sai |
+| **Evaluation** | `evals/` dataset + scorer + CI job | Baseline, tập held-out, scorer tự động trước LLM-judge | Scorecard: success, tool accuracy, pass^k, cost, p95 |
+| **Error handling** | `resilience/` retry, fallback, timeout, budget | Không im lặng, luôn có fallback + handoff | Test giả lập provider outage, tool timeout, output sai schema |
+
+**Template Agent chuẩn (LangGraph):**
+```
+input → guard_input → route_intent ─┬─ faq → rag_answer ────────┐
+                                    ├─ task → plan → tool_loop ─┤→ guard_output → reply
+                                    └─ handoff / unknown ───────┘
+          (checkpoint mỗi node · max_steps · budget · trace)
+```
+
+---
+
+## 🔁 Workflow Patterns (Mục tiêu 2)
+
+Mỗi pattern = **một n8n template + (tuỳ chọn) một graph trong Agent Service**. Workflow mới được ghép từ các pattern này.
+
+| Mã | Pattern | Khi nào dùng | n8n | Agent Service |
+|---|---|---|---|---|
+| **WP-01** | **Trigger → AI → Notify** | Tóm tắt, phân loại, trích xuất rồi gửi kết quả | Trigger → LLM Chain → Slack/Email | Không cần |
+| **WP-02** | **Channel Adapter** | Nhận tin từ một kênh mới | Webhook → verify → normalize → dedup → Execute Sub-workflow | Không |
+| **WP-03** | **Conversational Agent** | Hội thoại nhiều lượt với khách | WP-02 → lock + debounce → `POST /agent/run` → gửi reply về đúng kênh | Template Agent chuẩn |
+| **WP-04** | **Router** | Nhiều loại yêu cầu, xử lý khác nhau | Switch theo `intent` từ agent | `route_intent` node |
+| **WP-05** | **RAG Q&A có citation** | Trả lời từ tài liệu / chính sách | Gọi agent | `rag_answer` + citation |
+| **WP-06** | **Approval Gate (HITL)** | Hành động có side-effect | Wait node + Slack button / Form, có timeout | `interrupt()` + resume |
+| **WP-07** | **Human Handoff** | Agent không xử lý được | Chuyển Chatwoot, tắt bot cho conversation | Trả `action: handoff` |
+| **WP-08** | **Async Long Job** | Tác vụ > 30 giây | Gọi job → nhận job_id → Wait webhook callback | Celery / async worker |
+| **WP-09** | **Scheduled Batch / Report** | Báo cáo định kỳ, follow-up khách | Schedule → loop batch → agent → báo cáo | Batch endpoint |
+| **WP-10** | **Ingestion** | Cập nhật kiến thức | Drive / upload trigger → `POST /ingest` → báo kết quả | Docling → pgvector |
+| **WP-11** | **Error Handler** | Dùng chung cho mọi workflow | Error Trigger → ghi `failed_run` → alert | — |
+
+Ví dụ ghép: **Godine chatbot đa kênh = WP-02 (mỗi kênh) + WP-03 + WP-04 + WP-05 + WP-07 + WP-11**, thêm WP-06 khi agent được phép đặt chỗ / tạo đơn.
+
+---
+
+## ⚙️ Chuẩn n8n
+
+| Hạng mục | Chuẩn |
+|---|---|
+| **Deploy** | Docker, DB **PostgreSQL** (không dùng SQLite cho production), **queue mode** (`EXECUTIONS_MODE=queue` + Redis + worker) để scale |
+| **Cấu trúc** | Workflow chính mỏng, logic tách thành **sub-workflow** (Execute Workflow) dùng lại: adapter kênh, gửi reply, gọi agent, error handler |
+| **Đặt tên** | `[tenant]-[pattern]-[mô tả]`, ví dụ `godine-WP03-conversation`; node đặt tên theo việc làm |
+| **Credentials** | Chỉ dùng n8n Credentials, không hardcode key trong node; tách credential theo môi trường |
+| **Môi trường** | dev / staging / prod tách instance; workflow export JSON (`n8n export:workflow`) và lưu Git |
+| **Webhook** | Header Auth hoặc verify chữ ký, trả 200 sớm, xử lý bất đồng bộ |
+| **Lỗi** | Mọi workflow gắn Error Workflow chung (WP-11); bật `Retry On Fail` cho node gọi API ngoài |
+| **Dữ liệu** | Không lưu dữ liệu nghiệp vụ trong n8n; nguồn sự thật là PostgreSQL của Agent Service |
+| **Giới hạn** | Cấu hình prune execution data (retention), timeout cho workflow, giới hạn payload |
+| **Bàn giao** | Mỗi workflow có sticky note: mục đích, input/output, người phụ trách |
+
+---
+
+## 📦 Stack khuyến nghị (Agentic + Non-tech + Hybrid)
 
 | Layer | Chọn | Lý do |
 |---|---|---|
-| **Trigger** | n8n (webhook / form / cron) | Visual, non-tech cấu hình được |
-| **Orchestrator** | n8n outer + LangGraph inner | Visual routing + AI state machine |
-| **LLM** | Claude Sonnet + Haiku | Reasoning mạnh + batch rẻ (caching) |
-| **Agent framework** | LangGraph + Pydantic AI | Typed, debuggable, production-safe |
-| **Memory short-term** | Redis (TTL 24h) | Session state nhanh |
-| **Memory long-term** | Qdrant | Vector search, self-hosted |
-| **RAG pipeline** | MarkItDown → RecursiveChunk → text-embedding-3-small → Qdrant | Chuẩn, dễ maintain |
-| **Web search** | Tavily | AI-optimized, clean output |
-| **Browser** | Playwright (MCP) | Đã có sẵn (xem 04) |
-| **Code execution** | E2B | Safe sandbox |
-| **File processing** | MarkItDown + Drive API | Convert bất kỳ → markdown |
-| **Database** | PostgreSQL | Audit log, config, state |
-| **Notification** | Slack + Email (SendGrid) | Phổ biến trong công ty |
-| **Human in loop** | Slack button + n8n wait | Không cần build UI riêng |
-| **Guardrails** | Presidio + custom hooks (05) | PII + dangerous command |
-| **Observability** | Langfuse (self-hosted) | Open-source, dashboard đủ dùng |
-| **Auth** | Keycloak / JWT FastAPI | Self-hosted, enterprise |
+| **Trigger / Channel** | n8n Webhook + Chatwoot | Mỗi kênh một adapter, inbox chung cho nhân viên |
+| **Orchestrator** | n8n (outer) + LangGraph (inner) | Visual cho vận hành, code cho phần AI |
+| **LLM** | LiteLLM → Claude / OpenAI / local | Đổi model bằng config, fallback, gom cost |
+| **Agent framework** | LangGraph + Pydantic | Checkpoint, HITL, typed |
+| **State & memory** | PostgreSQL + Redis (+ Mem0) | Ít hạ tầng, đủ cho PoC đến production vừa |
+| **RAG** | Docling → pgvector → hybrid + BGE Reranker | Đồng bộ AI Roadmap, tốt cho tiếng Việt |
+| **Tools** | MCP / OpenAPI + Pydantic | Chuẩn chung, dùng lại giữa dự án |
+| **Human in loop** | Chatwoot (khách) + Slack + n8n Wait (nội bộ) | Không phải build UI riêng |
+| **Guardrails** | Presidio + guard rules + tool allowlist | PII, injection, hứa sai |
+| **Observability** | Langfuse + Grafana + Sentry | Trace, cost, alert |
+| **Evaluation** | DeepEval + Langfuse datasets | Benchmark nội bộ, eval gate |
+| **Auth** | Keycloak / JWT | Self-hosted, enterprise |
+| **Deploy** | Docker Compose → Terraform khi lên hạ tầng khách | Một lệnh deploy, rollback được |
 
 ---
 
-## 🗂️ Thứ tự xây dựng toolset (trước khi vào workflow thật)
+## 🚀 FDE — Godine PoC (Mục tiêu 3)
+
+**Phạm vi PoC bước 1:** tích hợp đa kênh + xử lý hội thoại. Danh sách kênh, hệ thống cần tích hợp và use case cụ thể **phải chốt với Godine ở Discovery** (xem [FDE Roadmap](roadmap-fde.html)); bảng dưới là khung để điền.
+
+### Luồng end-to-end
 
 ```
-Phase 0 — Hạ tầng (1–2 ngày)
-├── docker-compose.yml: n8n + Qdrant + PostgreSQL + Redis + Langfuse
-├── .env template: API keys, DB credentials, secrets
-└── Health check script: verify tất cả service lên đúng
-
-Phase 1 — AI Agent Service skeleton (2–3 ngày)
-├── FastAPI app: /health · /agent/run · /ingest
-├── Anthropic SDK + prompt caching + Langfuse integration
-├── LangGraph state machine template (reusable)
-└── Unit test từng node trong graph
-
-Phase 2 — Document Ingestion Pipeline (1–2 ngày)
-├── /ingest endpoint: parse → chunk → embed → Qdrant
-├── Hỗ trợ: PDF, DOCX, XLSX, URL
-└── Smoke test với tài liệu công ty (đã redact PII)
-
-Phase 3 — n8n setup + Templates (1–2 ngày)
-├── n8n self-hosted, cấu hình webhook domain + basic auth
-├── Template 1: "Trigger → AI Agent → Notify Slack/Email"
-├── Template 2: "File upload → Ingest → Confirm"
-├── Template 3: "Schedule → AI summarize → Report"
-└── UAT với non-tech user (BA/PM thao tác thử)
-
-Phase 4 — Security + Observability (1 ngày)
-├── Guardrails từ 05 → áp vào Agent Service (PII + dangerous cmd)
-├── Rate limiting trên FastAPI
-├── Langfuse dashboard: cost, latency, error rate
-└── Auth cho n8n UI và Agent Service
+Khách nhắn (Zalo / Messenger / Web …)
+  → WP-02 adapter kênh (verify, normalize, dedup)
+  → WP-03 lock + debounce → Agent Service /agent/run
+       guard_input → route_intent → rag_answer | tool_loop (API Godine) | handoff
+       → guard_output
+  → gửi reply về đúng kênh  ·  ghi conversation + trace Langfuse
+  → action = handoff → WP-07 Chatwoot cho nhân viên
+  → lỗi bất kỳ → WP-11 alert + câu trả lời dự phòng
 ```
 
----
+### Câu hỏi phải chốt ở Discovery
 
-## 🔁 Tái sử dụng khi vào workflow mới
+| Nhóm | Câu hỏi |
+|---|---|
+| **Kênh** | Những kênh nào, kênh nào ưu tiên, volume tin / ngày, giờ cao điểm? |
+| **Use case** | Top intent khách hỏi (FAQ, đặt chỗ, đơn hàng, khiếu nại…)? Agent được **làm** gì hay chỉ **trả lời**? |
+| **Hệ thống** | API nào có sẵn (CRM, booking, POS, đơn hàng)? Môi trường test? Ai cấp quyền? |
+| **Dữ liệu** | Tài liệu kiến thức ở đâu, ai cập nhật? Có PII gì, lưu ở đâu, bao lâu? |
+| **Vận hành** | Ai nhận handoff, dùng công cụ gì, giờ làm việc? SLA trả lời? |
+| **Hạ tầng** | Cloud của Kyanon hay của Godine? Ràng buộc data residency? |
 
-Mỗi workflow mới chỉ cần:
+### Tiêu chí đánh giá PoC
 
-| Cần | Tool có sẵn | Việc làm thêm |
+| Trục | Số đo | Cách đo |
 |---|---|---|
-| Trigger mới (form/email/API) | n8n node | Thêm 1 trigger node |
-| Logic AI mới | LangGraph template | Thêm/sửa node trong graph |
-| Tài liệu mới cần RAG | Qdrant + /ingest | Upload file, gọi `/ingest` |
-| Thông báo đầu ra | n8n (Slack/Email/Webhook) | Thêm 1 output node |
-| Human approval | n8n wait + Slack | Thêm wait node + Slack message |
-| Monitor | Langfuse | Tự động, không cần cấu hình thêm |
+| **Tích hợp** | Số kênh + số hệ thống Godine kết nối được end-to-end | Demo trên dữ liệu thật |
+| **Chất lượng** | Task success rate, accuracy intent, tỉ lệ handoff | Benchmark ≥ 50 hội thoại thật + review của Godine |
+| **Độ tin cậy** | Tỉ lệ run lỗi, tỉ lệ fallback, không trùng / mất tin khi webhook gửi lặp | Langfuse + bảng `failed_run` + test replay |
+| **Mở rộng** | Tin / phút chịu được, p95 latency khi tăng tải, số n8n worker cần | Load test (k6) theo volume cao điểm × 3 |
+| **Chi phí** | Cost / conversation, cost LLM / tháng, cost hạ tầng / tháng | Langfuse + LiteLLM spend × volume dự kiến |
 
+### Lộ trình
+
+| Bước | Nội dung | Exit gate |
+|---|---|---|
+| **1. Discovery** | Chốt kênh, use case, hệ thống, baseline hiện tại | Scope + tiêu chí nghiệm thu được Godine duyệt |
+| **2. PoC 1 kênh** | WP-02 + WP-03 + WP-05 trên 1 kênh ưu tiên, dữ liệu thật | Hội thoại end-to-end chạy, benchmark lần đầu |
+| **3. Đa kênh + tích hợp** | Thêm kênh, tool gọi API Godine, WP-07 handoff | Đủ kênh trong scope, test replay sạch |
+| **4. Đo & đánh giá** | Load test, cost report, review chất lượng với Godine | Báo cáo tin cậy / mở rộng / chi phí, go / no-go |
+| **5. Hoàn thiện** | Sửa theo phản hồi, bổ sung case vào benchmark, chuẩn bị production | Backlog bước tiếp theo được thống nhất |
+
+---
+
+## 🗓️ Kế hoạch 3 tháng
+
+Kế hoạch nghiên cứu chung cho cả team (11/2026 – 01/2027), từ nền tảng đến PoC Godine: xem **[01 — Kế hoạch nghiên cứu](01-research-plan.md)**.
+
+---
+
+## ♻️ Tái sử dụng khi vào workflow mới
+
+| Cần | Có sẵn | Việc làm thêm |
+|---|---|---|
+| Kênh mới | WP-02 adapter | Viết map payload, thêm credential |
+| Logic AI mới | Template Agent + skills | Thêm intent, tool, prompt; thêm case benchmark |
+| Tài liệu mới cho RAG | WP-10 + `/ingest` | Upload / trỏ thư mục |
+| Hành động có side-effect | WP-06 Approval Gate | Khai báo tool write + người duyệt |
+| Chuyển cho người | WP-07 + Chatwoot | Cấu hình inbox, rule handoff |
+| Lỗi & alert | WP-11 | Gắn Error Workflow |
+| Monitor & eval | Langfuse + DeepEval | Thêm dataset của dự án |

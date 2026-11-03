@@ -1,6 +1,6 @@
 # CAP-AI-01 · Agentic & FDE — Capability Matrix
 
-Tham chiếu: AI Engineer / Agentic AI Engineer Roadmap (index.html).
+Tham chiếu: [AI Engineer Roadmap](roadmap-ai.html) · [FDE Engagement Roadmap](roadmap-fde.html) · [Agentic Workflow Toolkit](00-agentic-workflow.md).
 
 ## 1. Thang Level
 

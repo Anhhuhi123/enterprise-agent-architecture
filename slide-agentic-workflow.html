@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic Workflow — Slide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="assets/kyanon-slide.css">
+<style>
+.slide{gap:0}
+.main{flex:1;display:grid;grid-template-columns:1fr 470px;gap:44px;min-height:0}
+.flow{display:flex;flex-direction:column}
+.mono{font-family:'JetBrains Mono',Consolas,monospace}
+
+/* nodes */
+.node{position:relative;display:flex;flex-direction:column;gap:12px;padding:16px 20px;border-radius:16px;background:#fff;
+  border:1px solid var(--line);box-shadow:0 8px 24px -16px rgba(0,0,0,.25)}
+.node-h{display:flex;align-items:center;gap:14px}
+.node-ic{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:19px;color:var(--red);background:var(--red-soft)}
+.node-t{font-weight:700;font-size:24px;color:var(--ink)}
+.node-t .lb{color:var(--red);margin-right:10px}
+.node-s{font-size:17px;color:var(--muted);margin-top:1px}
+.row2{display:grid;grid-template-columns:1.55fr 1fr;gap:18px}
+
+/* group */
+.group{position:relative;padding:26px 18px 18px;border-radius:20px;border:2px dashed var(--line-2);background:#FCFAFA}
+.group-label{position:absolute;top:-14px;left:24px;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--muted);background:#fff;padding:0 12px;white-space:nowrap}
+.group-label b{color:var(--red)}
+.group .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+/* arrows */
+.link{height:46px;position:relative;display:flex;justify-content:center;flex:none}
+.link svg{height:100%;width:28px;overflow:visible}
+.link .ln{stroke:var(--red);stroke-width:2.5;stroke-dasharray:6 7;animation:dash 1.1s linear infinite}
+.link .hd{fill:var(--red)}
+@keyframes dash{to{stroke-dashoffset:-26}}
+.link-label{position:absolute;left:calc(50% + 26px);top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);white-space:nowrap}
+
+/* cross-cutting column */
+.side{position:relative;display:flex;flex-direction:column;gap:12px;padding-left:34px}
+.rail{position:absolute;left:0;top:0;bottom:0;width:2px;background:repeating-linear-gradient(180deg,var(--purple) 0 7px,transparent 7px 14px);opacity:.6}
+.side-label{font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--purple);text-transform:uppercase}
+.side .node{flex:1;justify-content:center;padding:12px 18px;gap:10px}
+.side .node::before{content:"";position:absolute;left:-34px;top:50%;width:34px;border-top:2px dashed rgba(55,22,74,.5)}
+.side .node-ic{color:var(--purple);background:#EFEAF2}
+.side .node-t .lb{color:var(--purple)}
+</style>
+</head>
+<body>
+<main class="slide" id="slide">
+  <h1 class="k-title">Agentic Workflow Framework: 11 Layers</h1>
+  <p class="k-note"><b>n8n</b> runs the outer loop · <b>LangGraph</b> the inner loop · 11 reusable patterns, first applied to Godine</p>
+  <img class="k-logo" src="assets/kyanon-logo.png" alt="Kyanon">
+
+  <div class="main">
+    <div class="flow">
+      <div class="node">
+        <div class="node-h"><div class="node-ic"><i class="fa-solid fa-comments"></i></div>
+          <div><div class="node-t"><span class="lb">00</span>Trigger &amp; Channel</div><div class="node-s">One adapter per channel, mapped to one message schema</div></div></div>
+        <div class="chips">
+          <span class="tech" data-s="zalo" data-f="fa-solid fa-comment-dots">Zalo OA</span>
+          <span class="tech" data-s="messenger" data-f="fa-brands fa-facebook-messenger">Messenger</span>
+          <span class="tech" data-s="whatsapp" data-f="fa-brands fa-whatsapp">WhatsApp</span>
+          <span class="tech" data-f="fa-solid fa-globe">Website chat</span>
+          <span class="tech" data-s="gmail" data-f="fa-solid fa-envelope">Email</span>
+          <span class="tech" data-s="n8n" data-f="fa-solid fa-bolt">n8n Webhook</span>
+        </div>
+      </div>
+
+      <div class="link"><svg viewBox="0 0 28 46"><line class="ln" x1="14" y1="0" x2="14" y2="36"/><path class="hd" d="M6 34 L14 46 L22 34 Z"/></svg><span class="link-label mono">webhook · verify · dedup · debounce</span></div>
+
+      <div class="row2">
+        <div class="node">
+          <div class="node-h"><div class="node-ic"><i class="fa-solid fa-diagram-project"></i></div>
+            <div><div class="node-t"><span class="lb">01</span>Orchestrator</div><div class="node-s">Triggers, routing, replies, approvals, alerts</div></div></div>
+          <div class="chips">
+            <span class="tech" data-s="n8n" data-f="fa-solid fa-diagram-project">n8n</span>
+            <span class="tech" data-s="redis" data-f="fa-solid fa-layer-group">Redis queue mode</span>
+            <span class="tech" data-f="fa-solid fa-cubes">Sub-workflows</span>
+          </div>
+        </div>
+        <div class="node">
+          <div class="node-h"><div class="node-ic"><i class="fa-solid fa-user-check"></i></div>
+            <div><div class="node-t"><span class="lb">06</span>Human in the loop</div><div class="node-s">Handoff and approval</div></div></div>
+          <div class="chips">
+            <span class="tech" data-s="chatwoot" data-f="fa-solid fa-headset">Chatwoot</span>
+            <span class="tech" data-s="slack" data-f="fa-brands fa-slack">Slack</span>
+            <span class="tech" data-s="n8n" data-f="fa-solid fa-hourglass-half">n8n Wait</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="link"><svg viewBox="0 0 28 46"><line class="ln" x1="14" y1="0" x2="14" y2="36"/><path class="hd" d="M6 34 L14 46 L22 34 Z"/></svg><span class="link-label mono">POST /agent/run · one contract</span></div>
+
+      <div class="group">
+        <span class="group-label">AI AGENT SERVICE · <b>FastAPI + LangGraph</b></span>
+        <div class="cols">
+          <div class="node">
+            <div class="node-h"><div class="node-ic"><i class="fa-solid fa-microchip"></i></div><div class="node-t"><span class="lb">02</span>LLM</div></div>
+            <div class="chips">
+              <span class="tech" data-f="fa-solid fa-route">LiteLLM</span>
+              <span class="tech" data-s="anthropic" data-f="fa-solid fa-asterisk">Claude</span>
+              <span class="tech" data-s="openai" data-f="fa-solid fa-circle-nodes">OpenAI</span>
+            </div>
+          </div>
+          <div class="node">
+            <div class="node-h"><div class="node-ic"><i class="fa-solid fa-magnifying-glass-chart"></i></div><div class="node-t"><span class="lb">04</span>RAG</div></div>
+            <div class="chips">
+              <span class="tech" data-f="fa-solid fa-file-lines">Docling</span>
+              <span class="tech" data-s="postgresql" data-f="fa-solid fa-vector-square">pgvector</span>
+              <span class="tech" data-f="fa-solid fa-ranking-star">BGE Reranker</span>
+            </div>
+          </div>
+          <div class="node">
+            <div class="node-h"><div class="node-ic"><i class="fa-solid fa-screwdriver-wrench"></i></div><div class="node-t"><span class="lb">05</span>Tools</div></div>
+            <div class="chips">
+              <span class="tech" data-s="modelcontextprotocol" data-f="fa-solid fa-plug">MCP</span>
+              <span class="tech" data-s="openapiinitiative" data-f="fa-solid fa-code">OpenAPI</span>
+              <span class="tech" data-s="pydantic" data-f="fa-solid fa-check-double">Pydantic</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="link"><svg viewBox="0 0 28 46"><line class="ln" x1="14" y1="0" x2="14" y2="36"/><path class="hd" d="M6 34 L14 46 L22 34 Z"/></svg><span class="link-label mono">read / write state · checkpoint</span></div>
+
+      <div class="node">
+        <div class="node-h"><div class="node-ic"><i class="fa-solid fa-database"></i></div>
+          <div><div class="node-t"><span class="lb">03</span>State &amp; Memory</div><div class="node-s">One conversation across channels, isolated per tenant</div></div></div>
+        <div class="chips">
+          <span class="tech" data-s="postgresql" data-f="fa-solid fa-database">PostgreSQL</span>
+          <span class="tech" data-s="redis" data-f="fa-solid fa-bolt">Redis</span>
+          <span class="tech" data-s="langgraph" data-f="fa-solid fa-floppy-disk">LangGraph Checkpointer</span>
+          <span class="tech" data-f="fa-solid fa-brain">Mem0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <span class="rail"></span>
+      <p class="side-label">Cross-cutting · every layer</p>
+      <div class="node">
+        <div class="node-h"><div class="node-ic"><i class="fa-solid fa-shield-halved"></i></div>
+          <div><div class="node-t"><span class="lb">07</span>Guardrails</div><div class="node-s">Input · tool call · output</div></div></div>
+        <div class="chips">
+          <span class="tech" data-f="fa-solid fa-user-secret">Presidio</span>
+          <span class="tech" data-s="meta" data-f="fa-solid fa-shield-halved">Llama Guard</span>
+          <span class="tech" data-s="keycloak" data-f="fa-solid fa-key">Keycloak</span>
+        </div>
+      </div>
+      <div class="node">
+        <div class="node-h"><div class="node-ic"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div><div class="node-t"><span class="lb">08</span>Error handling</div><div class="node-s">Retry · fallback · dead-letter · alert</div></div></div>
+        <div class="chips">
+          <span class="tech" data-s="n8n" data-f="fa-solid fa-bug">n8n Error Trigger</span>
+          <span class="tech" data-f="fa-solid fa-route">LiteLLM fallback</span>
+          <span class="tech" data-s="sentry" data-f="fa-solid fa-bug">Sentry</span>
+        </div>
+      </div>
+      <div class="node">
+        <div class="node-h"><div class="node-ic"><i class="fa-solid fa-chart-line"></i></div>
+          <div><div class="node-t"><span class="lb">09</span>Observe &amp; Evaluate</div><div class="node-s">Trace, cost, benchmark gate</div></div></div>
+        <div class="chips">
+          <span class="tech" data-s="langfuse" data-f="fa-solid fa-magnifying-glass-chart">Langfuse</span>
+          <span class="tech" data-f="fa-solid fa-vial-circle-check">DeepEval</span>
+          <span class="tech" data-s="grafana" data-f="fa-solid fa-chart-line">Grafana</span>
+        </div>
+      </div>
+      <div class="node">
+        <div class="node-h"><div class="node-ic"><i class="fa-solid fa-rocket"></i></div>
+          <div><div class="node-t"><span class="lb">10</span>Deploy &amp; Operate</div><div class="node-s">One-command deploy · rollback · runbook</div></div></div>
+        <div class="chips">
+          <span class="tech" data-s="docker" data-f="fa-brands fa-docker">Docker</span>
+          <span class="tech" data-s="terraform" data-f="fa-solid fa-cubes">Terraform</span>
+          <span class="tech" data-s="githubactions" data-f="fa-brands fa-github">GitHub Actions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="k-foot"><i class="fa-solid fa-globe"></i>kyanon.digital</div>
+</main>
+<script src="assets/slide.js"></script>
+</body>
+</html>

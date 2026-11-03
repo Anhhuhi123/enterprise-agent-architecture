@@ -1,0 +1,37 @@
+/* Kyanon slide frame — matches "Talos Năng Lực Cốt Lõi.pptx" (white, red title, logo top-right, footer) */
+:root{
+  --red:#C31B18;--red-2:#A5300F;--red-soft:#FBEBEA;--purple:#37164A;
+  --ink:#212121;--muted:#595959;--line:#E3E3E3;--line-2:#D6D6D6;--zebra:#FAF7F6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#E9E9E9;overflow:hidden}
+body{font-family:'Inter Tight',Arial,sans-serif;color:var(--ink)}
+
+.slide{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center;
+  background:#fff;overflow:hidden;padding:136px 64px 88px;display:flex;flex-direction:column;gap:20px;
+  box-shadow:0 10px 40px rgba(0,0,0,.12)}
+.k-title{position:absolute;left:48px;top:30px;font-size:42px;font-weight:700;color:var(--red);letter-spacing:-.01em}
+.k-note{position:absolute;left:50px;top:86px;font-size:22px;color:var(--muted)}
+.k-note b{color:var(--purple);font-weight:600}
+.k-logo{position:absolute;right:52px;top:22px;height:60px}
+.k-foot{position:absolute;left:38px;bottom:26px;display:flex;align-items:center;gap:10px;font-size:22px;color:var(--muted)}
+.k-foot i{font-size:24px;color:#8C8C8C}
+.k-page{position:absolute;right:42px;bottom:26px;font-size:24px;color:var(--red)}
+
+/* tech chip with icon */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.tech{display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 5px;border-radius:999px;background:#fff;
+  border:1px solid var(--line);font-size:20px;font-weight:600;color:var(--ink);white-space:nowrap}
+.ico{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:50%;background:#F4F4F4}
+.ico img{width:18px;height:18px;display:block}
+.ico .fbk{display:none;font-size:15px;line-height:1;color:var(--red-2)}
+.ico.fb img{display:none}
+.ico.fb .fbk,.ico.nos .fbk{display:grid;place-items:center}
+
+/* table layout (roadmap slides) */
+.table{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;align-items:center;gap:32px;padding:0 32px;border-top:1px solid #EFEFEF}
+.row.th{height:52px;border-top:0;background:var(--red);color:#fff;font-size:21px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+.row:nth-child(even):not(.th){background:var(--zebra)}
+.num{font-weight:700;width:48px;height:48px;flex:none;border-radius:50%;background:var(--red-2);color:#fff;display:grid;place-items:center;font-size:21px}
+.out{font-size:24px;line-height:1.3;color:var(--ink)}

@@ -1,820 +1,296 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Orchestration Layer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<title>Chi phí video 300s</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root {
-    --bg: #F6F5F1;
-    --bg-alt: #ECEAE3;
-    --ink: #1B2430;
-    --muted: #5B6573;
-    --line: #8C96A3;
-    --card: #FFFFFF;
-    --border: #D9D6CC;
-    --llm: #2C5FC9;  --llm-fill: #E6EEFC;
-    --code: #A65A16; --code-fill: #FCEFE2;
-    --user: #2E7D4F; --user-fill: #E6F4EC;
-    --job: #1F2A37;
-    --dark: #15202B;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: #0F151C; overflow: hidden; }
-  body { font-family: 'IBM Plex Sans', Arial, sans-serif; color: var(--ink); }
-
-  /* ---------- deck frame ---------- */
-  .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
-  .deck { position: relative; flex: none; width: 1600px; height: 900px; transform-origin: center center; }
-  .slide { position: absolute; inset: 0; width: 1600px; height: 900px; background: var(--bg); padding: 36px 40px 0; display: none; overflow: hidden; }
-  .slide.active { display: block; }
-  .nav { position: fixed; right: 16px; top: 12px; display: flex; gap: 8px; align-items: center; font: 500 13px 'JetBrains Mono', monospace; color: #AEB8C4; z-index: 10; }
-  .nav button { background: #222D39; color: #E4E8EE; border: 1px solid #34414F; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }
-  .nav button:hover { background: #2C3947; }
-
-  /* ---------- slide header / footer ---------- */
-  .eyebrow { font: 500 14px 'JetBrains Mono', monospace; letter-spacing: 2.5px; color: var(--llm); text-transform: uppercase; }
-  .eyebrow.warm { color: var(--code); }
-  h2.title { font: 700 32px/1.15 'Space Grotesk', Arial, sans-serif; margin-top: 6px; }
-  .subtitle { font-size: 17px; color: var(--muted); margin-top: 6px; }
-  .head { height: 112px; }
-  .foot { position: absolute; left: 40px; right: 40px; bottom: 14px; display: flex; gap: 22px; align-items: center; font-size: 13px; color: var(--muted); }
-  .foot .sep { flex: 1; }
-  .legend { display: flex; gap: 16px; align-items: center; }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .sw { width: 16px; height: 12px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
-  .sw.llm { background: var(--llm-fill); border-color: var(--llm); }
-  .sw.code { background: var(--code-fill); border-color: var(--code); }
-  .sw.user { background: var(--user-fill); border-color: var(--user); }
-  .sw.io { background: #fff; border-color: var(--line); }
-  .sw.job { background: var(--job); border-color: var(--job); }
-  .sw.dec { background: var(--code-fill); border-color: var(--code); transform: rotate(45deg); width: 11px; height: 11px; }
-
-  /* ---------- diagram ---------- */
-  .diagram { position: relative; }
-  .diagram svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
-  .diagram .layer-edges { z-index: 1; }
-  .group { position: absolute; border: 2px dashed #9AA6B6; border-radius: 16px; background: rgba(255,255,255,0.35); z-index: 0; }
-  .group > .glabel { position: absolute; left: 14px; top: -13px; background: var(--bg); padding: 0 8px; font: 600 14px 'IBM Plex Sans', sans-serif; color: #3D4856; white-space: nowrap; }
-  .group.panel { border: 1.5px solid var(--border); border-style: solid; background: var(--bg-alt); }
-  .group.panel > .glabel { background: transparent; top: 8px; left: 14px; padding: 0; font-weight: 600; color: var(--muted); font-size: 13px; }
-  .group.gen { border-color: #5E6B7B; }
-
-  .node { position: absolute; z-index: 2; border-radius: 12px; border: 2px solid var(--line); background: var(--card); padding: 8px 11px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 1px 0 rgba(20,30,40,0.05); }
-  .node .row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-  .node .num { font: 500 12px 'JetBrains Mono', monospace; color: #6B7686; }
-  .node .tag { font: 600 11px 'IBM Plex Sans', sans-serif; letter-spacing: .5px; padding: 1px 7px; border-radius: 5px; color: #fff; }
-  .node .t { font: 700 17px/1.2 'Space Grotesk', Arial, sans-serif; }
-  .node .s { font-size: 13px; line-height: 1.3; color: var(--muted); }
-  .node.llm { border-color: var(--llm); background: var(--llm-fill); }
-  .node.llm .tag { background: var(--llm); }
-  .node.code { border-color: var(--code); background: var(--code-fill); }
-  .node.code .tag { background: var(--code); }
-  .node.user { border-color: var(--user); background: var(--user-fill); }
-  .node.user .tag { background: var(--user); }
-  .node.io { border-color: var(--line); background: #fff; border-radius: 22px; justify-content: center; }
-  .node.job { border-color: var(--job); background: var(--job); }
-  .node.job .t { color: #F3F5F8; }
-  .node.job .s { color: #B9C3CF; }
-  .node.job .num { color: #8E9AAA; }
-  .node.job .tag { background: #E4E8EE; color: var(--job); }
-  .node.svc { border-color: #4A5566; background: #fff; }
-  .node.svc .s { font-size: 14px; }
-  .node.chip { border-radius: 10px; padding: 6px 10px; justify-content: center; }
-  .node.chip .t { font-size: 15px; }
-  .node.chip .s { font: 500 11.5px 'JetBrains Mono', monospace; color: #6B7686; }
-  .node.job.chip .s { color: #B9C3CF; }
-  .node.user.chip .s { font-family: 'IBM Plex Sans', sans-serif; font-size: 12.5px; color: var(--muted); }
-
-  .dlabel { position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 22px; }
-  .dlabel .t { font: 700 15px/1.15 'Space Grotesk', Arial, sans-serif; }
-  .dlabel .s { font-size: 11.5px; line-height: 1.2; color: var(--muted); margin-top: 2px; }
-  .dlabel .tag { font: 600 10px 'IBM Plex Sans', sans-serif; padding: 0 6px; border-radius: 4px; color: #fff; margin-bottom: 3px; letter-spacing: .5px; }
-
-  .elabel { position: absolute; z-index: 3; transform: translate(-50%, -50%); background: var(--bg); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; line-height: 1.25; color: #3D4856; font-weight: 500; text-align: center; max-width: 270px; }
-  .elabel.loop { color: var(--code); }
-  .elabel.alt { background: var(--bg-alt); }
-  .note { position: absolute; z-index: 2; font-size: 13.5px; line-height: 1.4; color: var(--muted); }
-  .note b { color: var(--ink); }
-
-  /* ---------- cover ---------- */
-  .slide.cover { background: var(--dark); color: #F5F4EF; padding: 120px; }
-  .cover .eyebrow { color: #8FB0EE; font-size: 16px; }
-  .cover h1 { font: 700 88px/1.05 'Space Grotesk', Arial, sans-serif; margin-top: 28px; }
-  .cover p.lead { font-size: 28px; color: #B9C3CF; margin-top: 24px; max-width: 1100px; line-height: 1.35; }
-  .cover .chips { display: flex; gap: 16px; margin-top: 56px; flex-wrap: wrap; }
-  .cover .chips span { border: 1.5px solid #3A4A5C; border-radius: 30px; padding: 10px 22px; font-size: 20px; }
-  .cover .date { position: absolute; left: 120px; bottom: 60px; font-size: 16px; color: #7D8A99; }
-
-  /* ---------- tech stack ---------- */
-  .stack-wrap { display: flex; gap: 36px; }
-  .libs { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
-  .lib { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; }
-  .lib h4 { font: 700 15px 'Space Grotesk', Arial, sans-serif; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-  .lib h4 i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-  .lib ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
-  .lib li { font-size: 13.5px; line-height: 1.35; color: #3D4856; }
-  .lib li code { font: 500 12.5px 'JetBrains Mono', monospace; color: var(--ink); }
-  .lib.wide { grid-column: span 2; }
-
-  /* ---------- eval ---------- */
-  .evalwrap { display: flex; gap: 40px; align-items: flex-start; margin-top: 18px; }
-  .evt { border-collapse: collapse; width: 960px; background: var(--card); border: 1.5px solid var(--border); }
-  .evt th, .evt td { text-align: left; padding: 12px 14px; font-size: 17px; border-bottom: 1px solid var(--border); }
-  .evt th { font: 600 13px 'JetBrains Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); background: var(--bg-alt); }
-  .evt td:nth-child(n+2) { font-family: 'JetBrains Mono', monospace; font-size: 17px; }
-  .evt td:last-child { color: var(--llm); font-weight: 500; }
-  .evt tr:last-child td { border-bottom: none; }
-  .evnotes { flex: 1; }
-  .evnotes h4 { font: 700 18px 'Space Grotesk', Arial, sans-serif; margin: 6px 0 10px; }
-  .evnotes ul { margin: 0 0 22px 18px; display: flex; flex-direction: column; gap: 8px; }
-  .evnotes li { font-size: 16px; line-height: 1.45; color: #3D4856; }
-  .evnotes code { font: 500 14px 'JetBrains Mono', monospace; }
-
-  .evt.tune { width: 100%; margin-top: 6px; }
-  .tunehead { font: 600 15px 'IBM Plex Sans', sans-serif; margin-top: 16px; color: var(--ink); }
-  .tunedef { list-style: none; margin: 4px 0 2px; display: flex; flex-direction: column; gap: 1px; }
-  .tunedef li { font-size: 14px; line-height: 1.35; color: #3D4856; }
-  .tunedef li b { display: inline-block; width: 28px; font-family: 'JetBrains Mono', monospace; color: var(--ink); }
-  .tunedef code { font: 500 12.5px 'JetBrains Mono', monospace; }
-  .tunehead code { font: 500 13px 'JetBrains Mono', monospace; }
-  .evalwrap .evt { width: 100%; }
-  .evalwrap .evt th, .evalwrap .evt td { padding: 7px 14px; font-size: 16px; }
-  .evt.tune th, .evt.tune td { padding: 6px 14px; font-size: 15px; }
-  .evt.tune2 { margin-top: 14px; }
-  .evt.tune2 td:last-child { color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; font-size: 14px; }
-  .evt.tune td:last-child { color: var(--llm); font-weight: 500; }
-  .evt.tune1 td:last-child { color: inherit; font-weight: 400; }
-  .evt.tune1 td:nth-child(5) { color: var(--llm); font-weight: 500; }
-  .evt.tune td:first-child { font-family: 'IBM Plex Sans', sans-serif; }
-
-  /* ---------- pain points ---------- */
-  .slide.pain { background: var(--bg-alt); }
-  .pptable { display: flex; flex-direction: column; height: 690px; justify-content: center; }
-  .pprow { display: grid; grid-template-columns: 1.25fr 130px 1fr; gap: 40px; align-items: center; padding: 30px 8px; border-bottom: 1.5px solid var(--border); }
-  .pprow:last-child { border-bottom: none; }
-  .pphead { padding: 0 8px 12px; font: 500 12.5px 'JetBrains Mono', monospace; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
-  .ppt .meta { display: block; font: 500 13px 'JetBrains Mono', monospace; color: var(--muted); }
-  .ppt .tag { letter-spacing: 2px; text-transform: uppercase; color: var(--code); margin-right: 14px; }
-  .ppt .name { display: block; margin-top: 8px; font: 700 30px/1.2 'Space Grotesk', Arial, sans-serif; color: var(--ink); }
-  .pprow .fix { font-size: 19px; line-height: 1.45; color: #3D4856; }
-  .sev { display: inline-block; font-size: 13px; font-weight: 600; padding: 2px 11px; border-radius: 10px; white-space: nowrap; }
-  .sev.high { background: #F9DCCB; color: #8A3A0E; }
-  .sev.med { background: #E3E9F6; color: #24479A; }
-  .sev.low { background: #E8E7E2; color: #4A5260; }
-
-  /* ---------- routing ---------- */
-  .mflow { display: flex; align-items: stretch; gap: 8px; margin-top: 10px; }
-  .mstep { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; line-height: 1.4; color: #3D4856; }
-  .mstep b { display: block; font: 700 16px 'Space Grotesk', Arial, sans-serif; color: var(--ink); margin-bottom: 4px; }
-  .mstep.llm { border-color: var(--llm); } .mstep.code { border-color: var(--code); }
-  .mstep.pick { border-color: var(--user); border-width: 2.5px; }
-  .marrow { align-self: center; font-size: 22px; color: var(--muted); }
-  .rcol h4 .who { font: 600 13px 'JetBrains Mono', monospace; padding: 3px 9px; border-radius: 6px; margin-right: 8px; color: #fff; }
-  .rcol h4 .who.user { background: var(--user); } .rcol h4 .who.code { background: var(--code); }
-  .mlist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
-  .mlist li { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; font-size: 16px; line-height: 1.4; color: #3D4856; }
-  .mlist li b { color: var(--ink); }
-  .rwrap { display: flex; gap: 36px; align-items: flex-start; margin-top: 16px; }
-  .rcol { flex: 1; min-width: 0; }
-  .rcol h4 { font: 700 18px 'Space Grotesk', Arial, sans-serif; margin: 0 0 10px; }
-  .rcol .evt { width: 100%; }
-  .rcol .evt th, .rcol .evt td { padding: 13px 14px; font-size: 16.5px; }
-  .rcol .evt td:nth-child(n+2), .rcol .evt td:last-child { font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; color: #3D4856; }
-  .rcol .evt td.who { font: 600 13px 'JetBrains Mono', monospace; white-space: nowrap; }
-  .rcol .evt td.who.llm { color: var(--llm); } .rcol .evt td.who.code { color: var(--code); } .rcol .evt td.who.user { color: var(--user); }
-  .rules { list-style: none; counter-reset: r; display: flex; flex-direction: column; gap: 9px; }
-  .rules li { counter-increment: r; position: relative; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px 14px 52px; font-size: 16.5px; line-height: 1.4; color: #3D4856; }
-  .rules li::before { content: counter(r); position: absolute; left: 16px; top: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--code); color: #fff; font: 600 13px 'JetBrains Mono', monospace; display: flex; align-items: center; justify-content: center; }
-  .rules li b { color: var(--ink); }
-  .rules li code, .rcol code, .strip code { font: 500 13px 'JetBrains Mono', monospace; color: var(--ink); }
-  .callout { margin-top: 14px; border-left: 4px solid var(--user); background: var(--user-fill); border-radius: 0 10px 10px 0; padding: 10px 14px; font-size: 15px; line-height: 1.4; color: #2B3A33; }
-  .strip { display: flex; gap: 14px; margin-top: 16px; }
-  .strip > div { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 14px; font-size: 14.5px; line-height: 1.4; color: #3D4856; }
-  .strip b { display: block; font: 700 15px 'Space Grotesk', Arial, sans-serif; color: var(--ink); margin-bottom: 3px; }
-  .vtypes td.type { font: 700 20px 'Space Grotesk', Arial, sans-serif; white-space: nowrap; }
-  .vtypes td.type small { display: block; font: 400 12.5px 'IBM Plex Sans', sans-serif; color: var(--muted); }
-  .vtypes.evt td.pro { border-left: 3px solid var(--user); }
-  .vtypes.evt td.con { border-left: 3px solid var(--code); }
-  .vtypes.evt { width: 100%; margin-top: 4px; }
-  .vtypes.evt th, .vtypes.evt td { padding: 11px 14px; font-size: 15px; vertical-align: top; }
-  .vtypes.evt td:nth-child(n+2), .vtypes.evt td:last-child { font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; color: #3D4856; font-size: 15px; }
-  .pill { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 1px 9px; border-radius: 10px; white-space: nowrap; }
-  .pill.on { background: var(--user-fill); color: #1F5C3A; } .pill.off { background: #E8E7E2; color: #4A5260; } .pill.part { background: var(--code-fill); color: #7A430F; }
-
-  @media print {
-    html, body { background: #fff; overflow: visible; height: auto; }
-    .stage { position: static; display: block; }
-    .deck { transform: none !important; width: auto; height: auto; }
-    .slide { position: relative; display: block !important; page-break-after: always; break-after: page; }
-    .nav { display: none; }
-    @page { size: 1600px 900px; margin: 0; }
-  }
+/* Layout: tiêu đề + ba ô số, bộ lọc một hàng, biểu đồ thanh ngang xếp theo giá tăng dần, bảng số liệu. Một trục USD. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #14181f; --ink-2: #4a5362; --ink-3: #7a8494; --line: #e1e5ea; --grid: #edf0f3;
+  --rival: #d9722b;                                          /* mọi model đối thủ chạy full một model */
+  --t-budget: #a9d3dc; --t-std: #4fa3b5; --t-prem: #1c6578;  /* routing của mình: một hue, nhạt → đậm theo hạng scene */
+  --good: #1f7a4d; --good-bg: #e3f3ea; --hl: #e8f3f6;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1318; --surface: #171c23; --ink: #eef1f5; --ink-2: #aab3c0; --ink-3: #7c8696; --line: #2a313b; --grid: #222831;
+  --rival: #f0903f; --t-budget: #3d6c78; --t-std: #5db3c5; --t-prem: #9bd9e6;
+  --good: #6fd3a0; --good-bg: #17352a; --hl: #16262c; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1318; --surface: #171c23; --ink: #eef1f5; --ink-2: #aab3c0; --ink-3: #7c8696; --line: #2a313b; --grid: #222831;
+  --rival: #f0903f; --t-budget: #3d6c78; --t-std: #5db3c5; --t-prem: #9bd9e6;
+  --good: #6fd3a0; --good-bg: #17352a; --hl: #16262c; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); margin: 0;
+  padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0; font-weight: 600; text-wrap: balance; }
+.sub { color: var(--ink-2); margin: 6px 0 0; max-width: 64ch; }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.tile .k { font-size: 12.5px; color: var(--ink-2); }
+.tile .v { font: 500 30px/1.15 var(--mono); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.tile .d { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+.tile.ours .v { color: var(--t-prem); }
+.pill { display: inline-block; background: var(--good-bg); color: var(--good); border-radius: 99px; padding: 1px 9px; font: 500 12.5px var(--mono); margin-left: 6px; vertical-align: 3px; }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: end; }
+.ctl { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ctl label, .ctl .lab { font-size: 12.5px; color: var(--ink-2); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 500 13px var(--mono); padding: 7px 13px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible, input[type=range]:focus-visible { outline: 2px solid var(--t-std); outline-offset: 2px; }
+input[type=range] { width: 190px; max-width: 100%; accent-color: var(--t-prem); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 14px; }
+.card h2 { font-size: 16px; margin: 0 0 2px; font-weight: 600; }
+.card .note { color: var(--ink-3); font-size: 13px; margin: 0 0 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 10px; font-size: 13px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.row { display: grid; grid-template-columns: 230px 1fr; gap: 4px 14px; align-items: center; padding: 6px 8px; margin: 0 -8px; border-radius: 6px; }
+.row.ours { background: var(--hl); }
+.name { min-width: 0; }
+.name b { display: block; font-weight: 500; font-size: 13.5px; line-height: 1.25; }
+.name span { font-size: 12px; color: var(--ink-3); }
+.track { position: relative; height: 24px; min-width: 0; }
+.bar { position: absolute; inset: 0 auto 0 0; display: flex; gap: 2px; align-items: stretch; }
+.seg-bar { min-width: 2px; }
+.bar .seg-bar:last-child { border-radius: 0 4px 4px 0; }
+.val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 13.5px var(--mono); font-variant-numeric: tabular-nums; padding-left: 8px; white-space: nowrap; }
+.na { color: var(--ink-3); font: 12.5px var(--mono); }
+.tag { font: 500 11px var(--mono); color: var(--t-prem); background: var(--hl); border: 1px solid var(--t-std); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { text-align: right; padding: 7px 10px; border-top: 1px solid var(--grid); font-variant-numeric: tabular-nums; vertical-align: top; }
+th:nth-child(-n+3), td:nth-child(-n+3), th:last-child, td:last-child { text-align: left; }
+th { font-weight: 500; color: var(--ink-2); font-size: 12.5px; border-top: 0; white-space: nowrap; }
+td { font-family: var(--mono); } td:nth-child(-n+3), td:last-child { font-family: var(--sans); }
+td:last-child { color: var(--ink-3); font-size: 12.5px; min-width: 200px; }
+.scroll { overflow-x: auto; }
+.rtrack { position: relative; height: 24px; background: var(--grid); border-radius: 4px; min-width: 0; }
+.rng { position: absolute; top: 6px; height: 12px; background: var(--rival); border-radius: 6px; }
+.rmark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--t-prem); }
+.rlab { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; }
+details summary { cursor: pointer; font-size: 14px; color: var(--ink-2); padding: 4px 0; }
+.foot { font-size: 12.5px; color: var(--ink-3); max-width: 80ch; }
+.foot b { color: var(--ink-2); font-weight: 500; }
+@media (max-width: 640px) { .row { grid-template-columns: 1fr; } h1 { font-size: 22px; } }
 </style>
 </head>
 <body>
-<div class="stage">
-<div class="deck" id="deck">
 
-<!-- ===================== 0. COVER ===================== -->
-<section class="slide cover">
-  <div class="eyebrow">Storyboard Studio · Backend AI layer</div>
-  <h1>AI Orchestration Layer</h1>
-  <p class="lead">Three agents on two orchestrators: one plan-and-execute agent with replan for Script and Image (the LLM plans once, code runs and checks, replan only on problems), a single planner loop for Quick Video. Plus the stack, the eval behind the switch, and the pain points found in real use.</p>
-  <div class="chips">
-    <span>1 · Script agent</span>
-    <span>2 · Image agent</span>
-    <span>3 · Quick Video agent</span>
-    <span>4 · Tech stack</span>
-    <span>5 · Graph vs agent eval &amp; tuning</span>
-    <span>6 · Pain points</span>
-  </div>
-  <div class="date">October 2026</div>
-</section>
 
-<!-- ===================== 1. SCRIPT AGENT ===================== -->
-<section class="slide">
-  <div class="head">
-    <div class="eyebrow">Agent 1 · Script — plan-and-execute with replan</div>
-    <h2 class="title">Plan once, run in code, replan only when a step is blocked or a draft fails</h2>
-    <p class="subtitle">One chat turn = one background job. Drafts film script, episode outline, episode script, scene prompts and keyframes. The old fixed graph stays as a fallback.</p>
-  </div>
-  <div class="diagram" data-diagram="script"></div>
-  <div class="foot">
+<main>
+  <header>
+    <div class="eyebrow">Storyboard Studio · ước tính video</div>
+    <h1>Một tập 300s tốn bao nhiêu: routing của mình so với chạy full premium và từng model</h1>
+  </header>
+
+  <section class="hero" id="hero" aria-live="polite"></section>
+
+  <section class="controls" aria-label="Bộ lọc">
+    <div class="ctl"><span class="lab">Độ phân giải</span>
+      <div class="seg" id="res"><button data-v="720p" aria-pressed="true">720p</button><button data-v="1080p" aria-pressed="false">1080p</button></div></div>
+    <div class="ctl"><span class="lab">Tỉ lệ scene premium / standard / budget</span>
+      <div class="seg" id="mix"><button data-v="30,30,40" aria-pressed="false">30/30/40</button><button data-v="20,50,30" aria-pressed="true">20/50/30</button><button data-v="50,30,20" aria-pressed="false">50/30/20</button></div></div>
+    <div class="ctl"><span class="lab">Hãng</span>
+      <div class="seg" id="prov"><button data-v="all" aria-pressed="true">Tất cả</button><button data-v="Vidu" aria-pressed="false">Vidu</button><button data-v="Kling" aria-pressed="false">Kling</button><button data-v="Seedance" aria-pressed="false">Seedance</button><button data-v="Veo" aria-pressed="false">Veo</button></div></div>
+    <div class="ctl"><label for="retry">Retry: <b id="retryV" style="font-family:var(--mono)">×1.0</b></label>
+      <input id="retry" type="range" min="1" max="3" step="0.5" value="1"></div>
+  </section>
+
+  <section class="card">
+    <h2>Tổng chi phí 1 tập 300s (USD), xếp từ rẻ đến đắt</h2>
+    <p class="note" id="chartNote"></p>
     <div class="legend">
-      <span><i class="sw llm"></i>LLM call</span>
-      <span><i class="sw code"></i>Code</span>
-      <span><i class="sw dec"></i>Checks in code</span>
-      <span><i class="sw io"></i>Input / output</span>
+      <span><i style="background:var(--rival)"></i>Đối thủ: một model cho cả tập</span>
+      <span><i style="background:var(--t-prem)"></i>Của mình: scene premium</span>
+      <span><i style="background:var(--t-std)"></i>scene standard</span>
+      <span><i style="background:var(--t-budget)"></i>scene budget</span>
     </div>
-    <div class="sep"></div>
-    <div>LLM calls per turn: Q&amp;A <b>1</b> · ask back <b>1</b> · k tools <b>k + 2</b> · each fix round <b>+2</b> · caps: 2 fix rounds, 3 replans, 15 calls, $0.05, 120 s</div>
-  </div>
-</section>
+    <div id="chart"></div>
+  </section>
 
-<!-- ===================== 2. IMAGE AGENT ===================== -->
-<section class="slide">
-  <div class="head">
-    <div class="eyebrow">Agent 2 · Image — same plan-and-execute agent</div>
-    <h2 class="title">Same agent, different tools: this agent drafts the visual cards</h2>
-    <p class="subtitle">Separate chat thread per project. Drafts the style, character cards and location cards; images are generated only when the user clicks.</p>
-  </div>
-  <div class="diagram" data-diagram="image"></div>
-  <div class="foot">
-    <div class="legend">
-      <span><i class="sw llm"></i>LLM call</span>
-      <span><i class="sw code"></i>Code</span>
-      <span><i class="sw dec"></i>Checks in code</span>
-      <span><i class="sw io"></i>Input / output</span>
-      <span><i class="sw user"></i>User action</span>
-      <span><i class="sw job"></i>Background job</span>
-    </div>
-    <div class="sep"></div>
-    <div>The AI never writes to the board: the user fills the form and saves</div>
-  </div>
-</section>
+  <section class="card">
+    <h2>Khoảng giá theo hãng</h2>
+    <p class="note" id="rangeNote"></p>
+    <div id="ranges"></div>
+  </section>
 
-<!-- ===================== 3. QUICK VIDEO ===================== -->
-<section class="slide">
-  <div class="head">
-    <div class="eyebrow">Agent 3 · Quick Video — planner orchestrator</div>
-    <h2 class="title">No graph: one planner call per turn, then paid jobs only after approval</h2>
-    <p class="subtitle">Chat prompt + a few images → a video under 60 seconds. The LLM picks the step; code checks the rules and holds the money gate.</p>
-  </div>
-  <div class="diagram" data-diagram="quick"></div>
-  <div class="foot">
-    <div class="legend">
-      <span><i class="sw llm"></i>LLM call</span>
-      <span><i class="sw code"></i>Code</span>
-      <span><i class="sw dec"></i>Decision</span>
-      <span><i class="sw io"></i>Input / output</span>
-      <span><i class="sw job"></i>Background job</span>
-    </div>
-    <div class="sep"></div>
-    <div>Turn output: reply + one card (ideas, brief or plan)</div>
-  </div>
-</section>
+  <section class="card">
+    <h2>Hạng của từng model</h2>
+    <p class="note">Theo catalog repo (Elo I2V trên Artificial Analysis: premium ≥ 1100, standard 990–1100, budget &lt; 990; model không có trên leaderboard suy theo model gần nhất cùng hãng). Hạng là bản nháp, team chưa duyệt.</p>
+    <div class="scroll"><table id="tiers"></table></div>
+  </section>
 
-<!-- ===================== 4. TECH STACK ===================== -->
-<section class="slide">
-  <div class="head">
-    <div class="eyebrow">Tech stack</div>
-    <h2 class="title">One Python codebase, two processes: API and worker</h2>
-    <p class="subtitle">Modular monolith split by layer. Every AI call runs in the worker, never inside an HTTP request.</p>
-  </div>
-  <div class="stack-wrap">
-    <div class="diagram" data-diagram="stack"></div>
-    <div class="libs">
-      <div class="lib">
-        <h4><i style="background:#4A5566"></i>Runtime &amp; web</h4>
-        <ul>
-          <li>Python 3.12</li>
-          <li>FastAPI + uvicorn</li>
-          <li>Pydantic v2, pydantic-settings</li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:#4A5566"></i>Data</h4>
-        <ul>
-          <li>PostgreSQL, JSONB for semi-structured data</li>
-          <li>SQLAlchemy 2 async + psycopg 3</li>
-          <li>Alembic migrations</li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:var(--code)"></i>Jobs &amp; events</h4>
-        <ul>
-          <li>ARQ on Redis: 4 jobs at once, 20 min timeout, no auto-retry</li>
-          <li>redis-py pub/sub for SSE, rate limit</li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:var(--llm)"></i>Agent / orchestration</h4>
-        <ul>
-          <li><code>langgraph</code>: plan-and-execute agent with replan (fixed graph as fallback)</li>
-          <li><code>langgraph-checkpoint-postgres</code> chat memory</li>
-          <li><code>langchain-core</code> interfaces · Langfuse tracing (dev)</li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:var(--llm)"></i>Model access</h4>
-        <ul>
-          <li><code>httpx</code> REST to OpenAI and Vidu, no SDK</li>
-          <li>Strict structured output from Pydantic schemas</li>
-          <li>Fake or real provider per type</li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:var(--job)"></i>Models (defaults)</h4>
-        <ul>
-          <li>LLM: OpenAI <code>gpt-6-luna</code></li>
-          <li>Image: OpenAI <code>gpt-image-2</code></li>
-          <li>Video: Vidu <code>viduq3-turbo</code></li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:var(--user)"></i>Security</h4>
-        <ul>
-          <li>cryptography Fernet: provider keys, decrypted only in worker</li>
-          <li>pyjwt (HS256), argon2-cffi (Argon2id)</li>
-        </ul>
-      </div>
-      <div class="lib">
-        <h4><i style="background:#4A5566"></i>Media</h4>
-        <ul>
-          <li>FFmpeg / ffprobe: frames, joining clips</li>
-          <li>boto3 for S3 (signed URLs), Pillow</li>
-        </ul>
-      </div>
-      <div class="lib wide">
-        <h4><i style="background:#4A5566"></i>Build &amp; quality</h4>
-        <ul>
-          <li>uv + <code>uv.lock</code> · Docker image <code>python:3.12-slim</code> with dev / prod targets · pytest + pytest-asyncio (fake providers only) · ruff · eval suite: 10 cases, LLM judge, real model on demand</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="foot">
-    <div>Layer rule: <b>core, utils ← db, schemas ← ai, media ← services ← jobs/handlers, middlewares ← routes</b> (checked by a test)</div>
-  </div>
-</section>
+  <section class="card">
+    <h2>T2V, I2V, R2V là gì</h2>
+    <p class="note">Ba cách ra lệnh cho model video. Router chọn loại cho từng scene nên routing tính trên mọi model có hạng.</p>
+    <p class="foot"><b>T2V</b> (text → video): chỉ có prompt, nhân vật dễ lệch. <b>I2V</b> (image → video): bắt đầu từ một ảnh khung. <b>R2V</b> (reference → video): đưa ảnh tham chiếu của nhân vật và bối cảnh để giữ nhất quán qua các scene. Scene có nhân vật thường chạy R2V; scene cần giữ bố cục theo keyframe chạy I2V. Giá hai loại gần nhau (xem hai cột R2V / I2V trong bảng) nên trang không tách theo loại: mỗi model lấy giá R2V nếu có, không thì I2V.</p>
+  </section>
 
-<!-- ===================== 5. EVAL ===================== -->
-<section class="slide">
-  <div class="head">
-    <div class="eyebrow">Fixed graph vs plan-and-execute agent · eval</div>
-    <h2 class="title">Plan + replan beats the fixed graph on quality with fewer LLM calls</h2>
-    <p class="subtitle">3 runs per case, gpt-6-luna runs and judges (2026-10-13). #1 right tool call (code) · #2 meets the request · #3 usable by a director (LLM judge).</p>
-  </div>
-  <div class="evalwrap">
-    <table class="evt">
-      <thead><tr><th>Total</th><th>Fixed graph</th><th>ReAct agent</th><th>Plan + replan</th><th>+ light reasoning (D)</th></tr></thead>
-      <tbody>
-        <tr><td>Runs</td><td>10 × 3</td><td>10 × 3</td><td>11 × 3</td><td>11 × 3</td></tr>
-        <tr><td>#1 Right tool call</td><td>80%</td><td>73%</td><td>88%</td><td>91%</td></tr>
-        <tr><td>#2 Meets the request</td><td>60%</td><td>58%</td><td>71%</td><td>67%</td></tr>
-        <tr><td>#3 Usable by a director</td><td>58%</td><td>51%</td><td>66%</td><td>70%</td></tr>
-        <tr><td>LLM calls per run</td><td>3.2</td><td>2.4</td><td>2.5</td><td>2.6</td></tr>
-        <tr><td>Tool calls (drafts made)</td><td>15</td><td>15</td><td>23</td><td>25</td></tr>
-        <tr><td>Cost (assistant only)</td><td>$0.0443</td><td>$0.0336</td><td>$0.0519</td><td>$0.0512</td></tr>
-        <tr><td>Planner time p50</td><td>—</td><td>—</td><td>10.0 s</td><td>6.6 s</td></tr>
-        <tr><td>Hit the cap · errors</td><td>— · 0</td><td>0 · 0</td><td>0 · 0</td><td>0 · 0</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <h3 class="tunehead">Tuning reasoning per node · 11 cases × 3 runs, gpt-6-luna</h3>
-  <ul class="tunedef">
-    <li><b>A</b> no reasoning setting (baseline)</li>
-    <li><b>B</b> planner, replanner, respond, clarify at <code>low</code></li>
-    <li><b>C</b> B + drafting tools at <code>low</code></li>
-    <li><b>D</b> B + compact responder (default)</li>
-    <li><b>E1</b> only the planner at <code>low</code> (round 2)</li>
-  </ul>
-  <table class="evt tune tune1">
-    <thead><tr><th></th><th>A · baseline</th><th>B · light coordination</th><th>C · B + light tools</th><th>D · B + compact respond</th><th>E1 · only planner at low</th></tr></thead>
-    <tbody>
-      <tr><td>#1 / #2 / #3 quality</td><td>91 / 69 / 70</td><td>88 / 66 / 64</td><td>91 / 64 / 69</td><td>91 / 67 / 70</td><td>97 / 74 / 67</td></tr>
-      <tr><td>Assistant cost</td><td>$0.0607</td><td>$0.0508 (−16%)</td><td>$0.0474 (−22%)</td><td>$0.0512 (−16%)</td><td>$0.0590</td></tr>
-      <tr><td>Time per turn (median)</td><td>22.9 s</td><td>17.1 s (−25%)</td><td>20.3 s (−11%)</td><td>20.4 s (−11%)</td><td>25.3 s</td></tr>
-      <tr><td>Planner (median per call)</td><td>10.0 s</td><td>7.4 s (−27%)</td><td>8.1 s</td><td>6.6 s (−34%)</td><td>—</td></tr>
-    </tbody>
-  </table>
-  <div class="foot">
-    <div>Source: <code>apps/api/evals/assistant/reports/compare-graph-vs-agent-plan.md</code> (jobs 463, 462, 465, 469) · tuning: <code>reports/tuning-2026-10-13-005.md</code> · D rerun 91 / 63 / 66 vs D 91 / 67 / 70: noise · D1 (shared prompt prefix): no cache gain · E1 is round 2: vs D rerun +9% cost, +29% time</div>
-  </div>
-</section>
+  <section class="card">
+    <details>
+      <summary>Xem dạng bảng: đơn giá, nguồn và ghi chú từng model</summary>
+      <div class="scroll" style="margin-top:8px"><table id="tbl"></table></div>
+    </details>
+  </section>
 
-<!-- ===================== 7. ROUTING ===================== -->
-<section class="slide">
-  <div class="head" style="height:104px">
-    <div class="eyebrow warm">Video model · where it plugs into the agent · design under exploration, not built yet</div>
-    <h2 class="title">The video model is chosen between the scene description and the prompt, by the user or by code</h2>
-  </div>
-  <div class="rwrap">
-    <div class="rcol">
-      <h4><span class="who user">USER</span> Configures the model</h4>
-      <ul class="mlist">
-        <li><b>Where:</b> on the board, per scene, or one default per episode (today).</li>
-        <li><b>What:</b> the API type (<code>T2V</code>, <code>I2V</code>, <code>R2V</code>, <code>V2V</code>) and the model.</li>
-        <li><b>Checked by:</b> the capability table, so the user cannot pick a type or an image count the model does not support.</li>
-        <li><b>Wins over auto:</b> a forced choice is never overwritten by the router.</li>
-        <li><b>V2V</b> is only here: it needs an existing video, so it runs when the user asks to edit a scene (<code>edit_of: scene N</code>) and code makes a new take.</li>
-      </ul>
-    </div>
-    <div class="rcol">
-      <h4><span class="who code">AUTO</span> Code picks the fitting model</h4>
-      <ol class="rules">
-        <li><b>No character:</b> composition must match and a background exists → <code>I2V</code>, else <code>T2V</code>.</li>
-        <li><b>Character + exact composition:</b> keyframe exists → <code>I2V start-end</code>, else <code>R2V</code>.</li>
-        <li><b>Character, continuous with the previous scene:</b> <code>R2V</code> + last frame of the previous scene.</li>
-        <li><b>Everything else:</b> <code>R2V</code>.</li>
-        <li><b>Model:</b> filter by the capability table, then by the episode quality level; none left → downgrade <code>I2V start-end</code> → <code>I2V</code> → <code>R2V</code>.</li>
-      </ol>
-      <div class="callout">Deterministic: the same facts always give the same choice, and the reason is shown on the board so the user can override.</div>
-    </div>
-  </div>
-  <div class="foot">
-    <div>Source: <code>docs/10-model-routing.md</code> §3, §5 (exploring, no proposal yet) · related: PP-012 · most platforms (Vidu, Flow) and every API make the user / caller pick the mode explicitly</div>
-  </div>
-</section>
-
-<!-- ===================== 8. VIDEO API TYPES ===================== -->
-<section class="slide">
-  <div class="head" style="height:104px">
-    <div class="eyebrow warm">Video API types · T2V, I2V, R2V, V2V</div>
-    <h2 class="title">Four ways to call a video model: the output is always a video, the inputs differ</h2>
-    <p class="subtitle">Pros and cons are still hypotheses, to be tested by a dev on the web UI before any of it becomes a routing rule.</p>
-  </div>
-  <table class="evt vtypes">
-    <thead><tr><th>Type</th><th>Input</th><th>Pros</th><th>Cons</th><th>In the app today</th></tr></thead>
-    <tbody>
-      <tr><td class="type">T2V<small>text to video</small></td><td>Prompt only</td><td class="pro">Needs only a prompt: no image to prepare first</td><td class="con">Nothing anchors the face or the composition</td><td><span class="pill off">Not used</span></td></tr>
-      <tr><td class="type">I2V<small>image to video · start / start-end</small></td><td>Prompt + start image (+ end image)</td><td class="pro">Composition and setting match the start (and end) image; Keyframe mode already has these frames</td><td class="con">Needs the image to exist first; the prompt must not contradict it</td><td><span class="pill part">Only <code>sheet_cut</code> with first frame (<code>img2video</code>)</span></td></tr>
-      <tr><td class="type">R2V<small>reference to video</small></td><td>Prompt + subject images (characters, background)</td><td class="pro">Keeps a character's face across many scenes, from the character card images</td><td class="con">Does not lock the composition; needs <code>@Name</code> and <code>@background</code> in the prompt</td><td><span class="pill on">Default for almost every scene (<code>reference2video</code>)</span></td></tr>
-      <tr><td class="type">V2V<small>video to video</small></td><td>Prompt + source video</td><td class="pro">Edits or restyles an existing video without redoing the whole scene</td><td class="con">Needs a source video, so it cannot be chosen at planning time</td><td><span class="pill off">Not used (planned for the post-production tab)</span></td></tr>
-    </tbody>
-  </table>
-  <div class="strip">
-    <div><b>Two shared currencies: image and video</b>Each carries a role: <code>start_frame</code>, <code>end_frame</code>, <code>subject:&lt;name&gt;</code>, <code>background</code>, <code>source_video</code>. A last frame of T2V can feed I2V; an I2V output can be an R2V subject.</div>
-    <div><b>Prompt is written after the type is chosen</b>Each type needs a different prompt style. Changing type or model after a prompt exists marks it <code>stale</code> and the agent rewrites it.</div>
-    <div><b>Open questions</b>Does one Vidu call accept a start image and subjects together? How do T2V / I2V compare with R2V on the same scene? Who picks the model: user, a fixed quality level, or both?</div>
-  </div>
-  <div class="foot">
-    <div>Source: <code>docs/10-model-routing.md</code> §1, §2, §4, §9 · code: <code>services/video.py::to_vidu_request</code>, <code>vidu_endpoint</code></div>
-  </div>
-</section>
-
-<!-- ===================== 9. PAIN POINTS ===================== -->
-<section class="slide pain">
-  <div class="head" style="height:100px">
-    <div class="eyebrow warm">Pain points</div>
-    <h2 class="title">Found while making real films: the flow works, the output does not always</h2>
-  </div>
-  <div class="pptable">
-    <div class="pprow pphead"><span>Pain point</span><span>Severity</span><span>Fix</span></div>
-    <div class="pprow"><div class="ppt"><span class="meta"><span class="tag">Consistency</span>PP-005 · 006 · 013</span><span class="name">Context is lost between scenes</span></div><span class="sevc"><span class="sev high">High</span></span><span class="fix">Try I2V (start frame), start/end frame, V2V / extend</span></div>
-    <div class="pprow"><div class="ppt"><span class="meta"><span class="tag">Consistency</span>PP-004</span><span class="name">Real people cannot be used as references</span></div><span class="sevc"><span class="sev high">High</span></span><span class="fix">Warn about real faces at the Cast step, before any money is spent</span></div>
-    <div class="pprow"><div class="ppt"><span class="meta"><span class="tag">Language</span>PP-001</span><span class="name">Dialogue comes out in Chinese</span></div><span class="sevc"><span class="sev high">High</span></span><span class="fix">Ambient audio from Vidu, voice from our own subtitles / TTS</span></div>
-    <div class="pprow"><div class="ppt"><span class="meta"><span class="tag">Language</span>PP-011</span><span class="name">Vietnamese prompts may make Vidu skip details</span></div><span class="sevc"><span class="sev low">Low</span></span><span class="fix">Compare VI vs EN prompts, keep the better one as default</span></div>
-  </div>
-  <div class="foot">
-    <div>Also logged: cost and preview before paying (PP-003, 007, 012) · speed and editing (PP-008, 002)</div>
-    <div class="sep"></div>
-    <div><b>13</b> logged · <b>11</b> open · <b>2</b> resolved</div>
-  </div>
-</section>
-
-</div>
-</div>
-
-<div class="nav">
-  <button id="prev" aria-label="Previous slide">←</button>
-  <span id="count">1 / 10</span>
-  <button id="next" aria-label="Next slide">→</button>
-</div>
+  <p class="foot" id="foot"></p>
+</main>
 
 <script>
-/* ============ Diagram data (coordinates in px inside each diagram) ============ */
-const SHARED_GRAPH = [
-  { id: 'in', type: 'io', x: 0, y: 205, w: 150, h: 110, title: 'User message', sub: '+ board of the current episode' },
-  { id: 'prepare', type: 'code', n: '01', x: 192, y: 212, w: 140, h: 96, title: 'Prepare', sub: 'history; summarize old turns' },
-  { id: 'planner', type: 'llm', n: '02', x: 362, y: 212, w: 160, h: 96, title: 'Planner', sub: 'one call: route, steps, brief' },
-  { id: 'route', type: 'decision', x: 552, y: 195, w: 150, h: 130, title: 'Route', sub: 'brief check in code' },
-  { id: 'answer', type: 'io', x: 552, y: 30, w: 150, h: 84, title: 'Answer', sub: 'planner replies · 1 call' },
-  { id: 'ask', type: 'io', x: 552, y: 410, w: 150, h: 84, title: 'Ask back', sub: 'questions + suggested answers' },
-  { id: 'orch', type: 'code', tag: 'CODE + LLM × k', n: '03', x: 737, y: 212, w: 175, h: 96, title: 'Executor', sub: 'guard each step' },
-  { id: 'val', type: 'decision', x: 945, y: 195, w: 150, h: 130, title: 'Validator', sub: 'multi-layer check' },
-  { id: 'resp', type: 'llm', n: '05', x: 1130, y: 212, w: 150, h: 96, title: 'Respond', sub: 'reply + next questions' },
-  { id: 'replan', type: 'llm', n: '04', x: 945, y: 410, w: 150, h: 96, title: 'Replanner', sub: 'run · ask_user · finish' },
-  { id: 'stop', type: 'io', x: 1130, y: 30, w: 150, h: 84, title: 'Stop (cap)', sub: 'partial result + warning, no LLM' },
-  { id: 'guards', type: 'code', x: 192, y: 368, w: 330, h: 160, title: 'Guards (code)', sub: 'Brief both ways: ask only if the top level misses info, draft if it is complete · current episode only · keyframes need scenes · pipeline gate: never draft what cannot be saved yet · no repeat draft except fixes' },
-  { id: 'out', type: 'io', x: 1350, y: 205, w: 165, h: 110, title: 'Reply + drafts', sub: 'user fills the form, saves' },
+// Đơn giá USD/giây, ĐÃ GỒM TIẾNG. `o[loại]` = giá theo loại API (R2V / I2V; "*" = chưa rõ loại, dùng cho mọi loại). Chỉ 720p và 1080p.
+// `tier`: hạng trong catalog repo (apps/api/app/core/video_catalog.py, tra 2026-10-19); không có `tier` = chưa xếp hạng.
+// `src`: "official" = đối chiếu được trang chính thức ngày 2026-11-03; "3p" = chỉ có nguồn bên thứ ba (trang chính thức không đọc được).
+const MODELS = [
+  // --- Vidu: platform.vidu.com/docs/pricing (credit × $0.005 theo config repo; trang chính thức chỉ niêm yết RMB 0.03125/credit). Tiếng là tham số, không có phụ phí q3 ---
+  { id: "Vidu q3-turbo",     prov: "Vidu", tier: 0, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.050, "1080p": 0.065 }, I2V: { "720p": 0.060, "1080p": 0.065 } }, note: "R2V 10 / 13 credit, I2V 12 / 13 credit." },
+  { id: "Vidu q3",           prov: "Vidu", tier: 1, src: "official", kinds: "R2V", o: { R2V: { "720p": 0.060, "1080p": 0.075 } }, note: "R2V 12 / 15 credit. Hạng suy theo q3-pro." },
+  { id: "Vidu q3-pro-fast",  prov: "Vidu", tier: 0, src: "official", kinds: "I2V", o: { I2V: { "720p": 0.060, "1080p": 0.075 } }, note: "I2V 12 / 15 credit. Hạng suy theo q3-pro (hạ một bậc)." },
+  { id: "Vidu q3-pro",       prov: "Vidu", tier: 1, src: "official", kinds: "T2V · I2V", o: { I2V: { "720p": 0.100 } }, note: "720p 20 credit. Trang chính thức có dòng 1080p nhưng để trống giá (catalog repo ghi 24 credit, chưa kiểm được) nên bỏ khỏi 1080p. Elo I2V 1016." },
+  { id: "Vidu q3-mix",       prov: "Vidu", tier: 1, src: "official", kinds: "R2V", o: { R2V: { "720p": 0.120, "1080p": 0.145 } }, note: "24 / 29 credit. Hạng suy theo q3-pro." },
+  { id: "Vidu q4-preview",   prov: "Vidu", tier: 1, src: "official", kinds: "I2V · R2V", o: { R2V: { "720p": 0.095, "1080p": 0.120 }, I2V: { "720p": 0.095, "1080p": 0.120 } }, note: "19 / 24 credit, R2V và I2V cùng giá. R2V chưa nhận ảnh có tên." },
+  // --- Kling: bảng kling.ai/dev/pricing (đọc 2026-08-21) theo chinamodelapi.com, trùng các nguồn khác; trang Kling không đọc được trực tiếp.
+  //     v3 có tiếng = $0.084 / $0.112 × 1.5; Omni và Turbo có tiếng rẻ hơn v3 ($0.112 / $0.140) ---
+  { id: "Kling v3",          prov: "Kling", tier: 1, src: "3p", kinds: "T2V · I2V", o: { I2V: { "720p": 0.126, "1080p": 0.168 } }, note: "Không tiếng $0.084 / $0.112, tiếng ×1.5. Khớp catalog repo. Elo I2V 1000." },
+  { id: "Kling v3-omni",     prov: "Kling", tier: 1, src: "3p", kinds: "R2V", o: { R2V: { "720p": 0.112, "1080p": 0.140 } }, note: "Không tiếng $0.084 / $0.112, có tiếng $0.112 / $0.140 (không có video đầu vào). Catalog repo đang ghi ×1.5 = $0.126 / $0.168: lệch." },
+  { id: "Kling v3-turbo",    prov: "Kling", tier: 1, src: "3p", kinds: "T2V · I2V", o: { I2V: { "720p": 0.112, "1080p": 0.140 } }, note: "Tiếng luôn bật, một giá. Khớp catalog repo. Hạng suy theo v3." },
+  // --- Seedance (BytePlus ModelArk, giá token rộng × cao × 24 / 1024 × $/M; trang docs.byteplus.com không đọc được, số $/M từ nguồn bên thứ ba, không có video đầu vào) ---
+  { id: "Seedance 1.5 Pro",  prov: "Seedance", src: "3p", kinds: "chưa rõ", o: { "*": { "720p": 0.047, "1080p": 0.047 } }, note: "Atlas Cloud (bên bán lại), giá phẳng, chưa rõ gồm tiếng. Không tìm được giá chính thức BytePlus." },
+  { id: "Seedance 2.0 Mini", prov: "Seedance", src: "3p", kinds: "chưa rõ", o: { "*": { "720p": 0.056 } }, note: "Atlas Cloud (bên bán lại), giá phẳng. Tối đa 720p, không có 1080p. ByteDance niêm yết 720p khoảng ¥0.5/giây (~$0.07); BytePlus chưa có giá USD." },
+  { id: "Seedance 2.0 Fast", prov: "Seedance", tier: 1, src: "3p", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1210 }, I2V: { "720p": 0.1210 } }, note: "$5.6/M token. Không có 1080p. Hạng suy theo 2.0 (hạ một bậc)." },
+  { id: "Seedance 2.0",      prov: "Seedance", tier: 2, src: "3p", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1512, "1080p": 0.3742 }, I2V: { "720p": 0.1512, "1080p": 0.3742 } }, note: "$7.0 / $7.7 mỗi M token. Elo I2V 1121." },
+  { id: "Seedance 2.5",      prov: "Seedance", tier: 2, src: "3p", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.2311, "1080p": 0.5686 }, I2V: { "720p": 0.2311, "1080p": 0.5686 } }, note: "$10.7 / $11.7 mỗi M token (ModelArk, 2026-10-14, có tiếng không phụ phí). 1080p mới xuất hiện từ tháng 10, cần kiểm trong console. Elo I2V 1138." },
+  // --- Veo / Gemini (Gemini API, giá có tiếng; Veo 3 / 3 Fast chỉ có giá chỉ-video nên bỏ) ---
+  { id: "Veo 3.1 Lite",      prov: "Veo", src: "3p", kinds: "chưa có trong catalog", o: { "*": { "720p": 0.05, "1080p": 0.08 } }, note: "Theo bảng giá Google đọc lại ngày 2026-10-13 (benchlm.ai), nhiều nguồn trùng. Gemini API luôn có tiếng." },
+  { id: "Veo 3.1 Fast",      prov: "Veo", src: "3p", kinds: "chưa có trong catalog", o: { "*": { "720p": 0.10, "1080p": 0.12 } }, note: "Như Lite. Giá đã giảm từ $0.15 (tháng 4)." },
+  { id: "Veo 3.1",           prov: "Veo", src: "3p", kinds: "chưa có trong catalog", o: { "*": { "720p": 0.40, "1080p": 0.40 } }, note: "Như Lite. Một nguồn ghi Veo 3.1 ngừng 2026-10-22, thay bằng Gemini Omni: chưa kiểm được." },
+  { id: "Gemini Omni 1.1 Flash", prov: "Veo", tier: 2, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1014, "1080p": 0.152 }, I2V: { "720p": 0.1014, "1080p": 0.152 } }, note: "720p: $17.5/M token × 5.792 token/s (trang Google). 1080p là upscale, giá bên thứ ba. Chưa có transport nên không vào routing." },
 ];
-const SHARED_EDGES = [
-  { f: 'in', fs: 'r', t: 'prepare', ts: 'l' },
-  { f: 'prepare', fs: 'r', t: 'planner', ts: 'l' },
-  { f: 'planner', fs: 'r', t: 'route', ts: 'l' },
-  { f: 'route', fs: 't', t: 'answer', ts: 'b', label: 'Q&A', lp: [627, 152] },
-  { f: 'route', fs: 'b', t: 'ask', ts: 't', label: 'info missing', lp: [627, 366] },
-  { f: 'route', fs: 'r', t: 'orch', ts: 'l', lp: [719, 236] },
-  { f: 'orch', fs: 'r', t: 'val', ts: 'l' },
-  { f: 'val', fs: 'r', t: 'resp', ts: 'l', label: 'ok', lp: [1112, 236] },
-  { f: 'resp', fs: 'r', t: 'out', ts: 'l' },
-  { f: 'val', fs: 'b', t: 'replan', ts: 't', label: 'hard errors → fix (max 2 rounds)', lp: [1020, 366] },
-  { f: 'replan', fs: 'l', t: 'orch', ts: 'b', via: [[824, 458]], dash: true, loop: true, label: 're-run failed steps with their draft', lp: [840, 486] },
-  { f: 'replan', fs: 'r', t: 'resp', ts: 'b', via: [[1205, 458]], label: 'finish', lp: [1205, 400] },
-  { f: 'replan', fs: 'l', fo: -22, t: 'ask', ts: 'r', to2: -16, label: 'ask_user', lp: [763, 436] },
-  { f: 'val', fs: 't', t: 'stop', ts: 'l', via: [[1020, 72]], dash: true, dot: true, label: 'cap hit (calls, $, time)', lp: [1020, 150] },
-];
-const AGENT_GROUP = { x: 172, y: 8, w: 1150, h: 545, label: 'Orchestrator' };
+const ROUTE_PROVS = ["Vidu", "Kling", "Seedance"];
+const TIER = ["budget", "standard", "premium"], TIER_VAR = ["budget", "std", "prem"];
+const state = { prov: "all", res: "720p", mix: [20, 50, 30], retry: 1 };  // mix = premium, standard, budget (%)
+const usd = n => !isFinite(n) ? "—" : "$" + (n >= 100 ? Math.round(n) : n.toFixed(1));
+const tierName = m => m.tier == null ? "chưa xếp hạng" : TIER[m.tier];
+// Giá/giây của một model ở độ phân giải đang chọn: ưu tiên giá R2V, không có thì I2V, rồi giá chung. Không phân biệt loại video.
+const mp = (m, res) => { const o = [m.o.R2V, m.o.I2V, m.o["*"]].find(x => x && x[res] != null); return o ? o[res] : null; };
 
-const DIAGRAMS = {
-  script: {
-    w: 1520, h: 700,
-    groups: [AGENT_GROUP, { x: 195, y: 575, w: 1150, h: 120, label: 'Step 03 zoomed in · drafting tools of the Script thread run in dependency order; a lower level reads this turn\'s upper-level draft', panel: true }],
-    nodes: [
-      ...SHARED_GRAPH,
-      { id: 'k1', type: 'llm', chip: true, x: 225, y: 618, w: 190, h: 60, title: 'Film script', sub: 'draft_film_script' },
-      { id: 'k2', type: 'llm', chip: true, x: 450, y: 618, w: 190, h: 60, title: 'Episode outline', sub: 'draft_episode_outline' },
-      { id: 'k3', type: 'llm', chip: true, x: 675, y: 618, w: 190, h: 60, title: 'Episode script', sub: 'draft_episode_script' },
-      { id: 'k4', type: 'llm', chip: true, x: 900, y: 618, w: 190, h: 60, title: 'Scene prompts', sub: 'draft_scene_scripts' },
-      { id: 'k5', type: 'llm', chip: true, x: 1125, y: 618, w: 195, h: 60, title: 'Keyframes', sub: 'Keyframe mode only' },
-    ],
-    edges: [
-      ...SHARED_EDGES,
-      { f: 'k1', fs: 'r', t: 'k2', ts: 'l' },
-      { f: 'k2', fs: 'r', t: 'k3', ts: 'l' },
-      { f: 'k3', fs: 'r', t: 'k4', ts: 'l' },
-      { f: 'k4', fs: 'r', t: 'k5', ts: 'l' },
-    ],
-  },
-
-  image: {
-    w: 1520, h: 700,
-    groups: [AGENT_GROUP, { x: 700, y: 575, w: 620, h: 120, label: 'Step 03 zoomed in · drafting tools of the Image thread', panel: true }],
-    nodes: [
-      ...SHARED_GRAPH,
-      { id: 'st', type: 'llm', chip: true, x: 725, y: 618, w: 180, h: 60, title: 'Style', sub: 'draft_style' },
-      { id: 'ch', type: 'llm', chip: true, x: 990, y: 604, w: 200, h: 40, title: 'Characters', sub: '' },
-      { id: 'lo', type: 'llm', chip: true, x: 990, y: 650, w: 200, h: 40, title: 'Locations', sub: '' },
-      { id: 'save', type: 'user', chip: true, x: 1350, y: 560, w: 165, h: 58, title: 'User saves card', sub: 'clicks Generate' },
-      { id: 'job', type: 'job', chip: true, x: 1350, y: 636, w: 165, h: 58, title: 'Image job', sub: 'gpt-image-2' },
-    ],
-    edges: [
-      ...SHARED_EDGES,
-      { f: 'st', fs: 'r', t: 'ch', ts: 'l' },
-      { f: 'st', fs: 'r', t: 'lo', ts: 'l' },
-      { f: 'out', fs: 'b', t: 'save', ts: 't' },
-      { f: 'save', fs: 'b', t: 'job', ts: 't' },
-    ],
-    notes: [
-      { x: 1200, y: 612, w: 120, html: 'Characters and locations run <b>in parallel</b>' },
-      { x: 200, y: 580, w: 470, html: '<b>What differs from agent 1</b><br>Own chat thread and memory per project.<br>Tools: style, characters, locations.<br>Character prompt shows only that character; location prompt has no people.<br>Image generation is a separate job, outside the agent.' },
-    ],
-  },
-
-  quick: {
-    w: 1520, h: 700,
-    groups: [
-      { x: 172, y: 8, w: 1180, h: 382, label: 'Planner orchestrator · chat phase — plain Python, one planner call per user turn' },
-      { x: 172, y: 440, w: 1180, h: 215, label: 'Generation phase · background jobs — paid, runs only after approval', gen: true },
-    ],
-    nodes: [
-      { id: 'in', type: 'io', x: 0, y: 205, w: 150, h: 110, title: 'User message', sub: 'text + named images, or Plan now' },
-      { id: 'planner', type: 'llm', n: '1', x: 198, y: 208, w: 165, h: 104, title: 'Planner', sub: 'LLM picks: understand, brief or plan' },
-      { id: 'norm', type: 'code', n: '2', x: 390, y: 212, w: 150, h: 96, title: 'Normalize', sub: 'trim; drop scenes before the plan step' },
-      { id: 'rules', type: 'decision', x: 568, y: 200, w: 150, h: 120, title: 'Rules OK?', sub: 'code check' },
-      { id: 'step', type: 'decision', x: 752, y: 200, w: 150, h: 120, title: 'Which step?', sub: '' },
-      { id: 'reply', type: 'io', x: 745, y: 40, w: 165, h: 80, title: 'Reply + card', sub: 'ideas or brief; wait for user' },
-      { id: 'refuse', type: 'io', x: 198, y: 336, w: 165, h: 40, title: 'Refused → ask to rephrase', sub: '', small: true },
-      { id: 'writer', type: 'llm', tag: 'LLM × N', n: '3', x: 935, y: 212, w: 165, h: 96, title: 'Scene writer', sub: 'one video prompt per scene, in parallel' },
-      { id: 'plancost', type: 'io', x: 1130, y: 205, w: 165, h: 110, title: 'Plan + cost', sub: 'scenes under 60s, images to create, estimate' },
-      { id: 'approve', type: 'decision', user: true, x: 1375, y: 196, w: 145, h: 128, title: 'User approves?', sub: 'code checks budget' },
-      { id: 'img', type: 'job', n: '4', x: 1130, y: 500, w: 165, h: 96, title: 'Image job', sub: 'create missing refs · gpt-image-2' },
-      { id: 'v1', type: 'job', n: '5', x: 920, y: 500, w: 165, h: 96, title: 'Video · scene 1', sub: 'Vidu reference-to-video' },
-      { id: 'v2', type: 'job', x: 710, y: 500, w: 165, h: 96, title: 'Video · scene 2', sub: '+ last frame of scene 1' },
-      { id: 'vn', type: 'job', x: 500, y: 500, w: 165, h: 96, title: 'Video · scene N', sub: 'one scene at a time' },
-      { id: 'done', type: 'io', x: 220, y: 500, w: 170, h: 96, title: 'Quick video', sub: 'one clip per scene' },
-    ],
-    edges: [
-      { f: 'in', fs: 'r', t: 'planner', ts: 'l' },
-      { f: 'planner', fs: 'r', t: 'norm', ts: 'l' },
-      { f: 'norm', fs: 'r', t: 'rules', ts: 'l' },
-      { f: 'rules', fs: 't', t: 'planner', ts: 't', via: [[643, 168], [280, 168]], dash: true, loop: true, label: 'no → fix notes, max 2 rounds', lp: [462, 168] },
-      { f: 'rules', fs: 'r', t: 'step', ts: 'l', label: 'yes', lp: [735, 240] },
-      { f: 'step', fs: 't', t: 'reply', ts: 'b', label: 'understand / brief', lp: [827, 160] },
-      { f: 'reply', fs: 'l', t: 'in', ts: 't', via: [[75, 80]], dash: true, label: 'next user turn', lp: [430, 80] },
-      { f: 'planner', fs: 'b', t: 'refuse', ts: 't', dash: true, dot: true },
-      { f: 'step', fs: 'r', t: 'writer', ts: 'l', label: 'plan', lp: [918, 240] },
-      { f: 'writer', fs: 'r', t: 'plancost', ts: 'l' },
-      { f: 'plancost', fs: 'r', t: 'approve', ts: 'l' },
-      { f: 'approve', fs: 't', t: 'reply', ts: 'r', via: [[1447, 80]], dash: true, label: 'no → keep chatting', lp: [1180, 80] },
-      { f: 'approve', fs: 'b', t: 'img', ts: 'r', via: [[1447, 548]], label: 'yes', lp: [1447, 420] },
-      { f: 'img', fs: 'l', t: 'v1', ts: 'r' },
-      { f: 'v1', fs: 'l', t: 'v2', ts: 'r' },
-      { f: 'v2', fs: 'l', t: 'vn', ts: 'r' },
-      { f: 'vn', fs: 'l', t: 'done', ts: 'r' },
-    ],
-    notes: [
-      { x: 500, y: 616, w: 800, html: 'Scenes run <b>in series</b>: each one uses the last frame of the previous scene to keep continuity.' },
-    ],
-  },
-
-  stack: {
-    w: 830, h: 690,
-    groups: [{ x: 180, y: 30, w: 340, h: 640, label: 'One Docker image, two processes' }],
-    nodes: [
-      { id: 'web', type: 'io', x: 0, y: 285, w: 140, h: 110, title: 'Web app', sub: 'Next.js, React Flow canvas' },
-      { id: 'api', type: 'svc', x: 200, y: 60, w: 300, h: 170, title: 'API process', sub: 'FastAPI + uvicorn<br>routes → services → db<br>auth via Depends · gates · budget check<br>gen requests only create a job' },
-      { id: 'redis', type: 'svc', x: 225, y: 290, w: 250, h: 100, title: 'Redis', sub: 'ARQ job queue<br>pub/sub for SSE · rate limit' },
-      { id: 'worker', type: 'svc', x: 200, y: 450, w: 300, h: 200, title: 'Worker process', sub: 'ARQ: jobs/handlers → services<br>ai/: plan-and-execute agent (LangGraph), Quick Video planner, prompts, providers<br>decrypts provider key just before the call · traces to Langfuse' },
-      { id: 'pg', type: 'svc', x: 590, y: 60, w: 240, h: 120, title: 'PostgreSQL', sub: 'SQLAlchemy 2 async, Alembic<br>LangGraph checkpoint schema' },
-      { id: 'prov', type: 'job', x: 590, y: 440, w: 240, h: 110, title: 'Model providers', sub: 'OpenAI: gpt-6-luna, gpt-image-2<br>Vidu: viduq3-turbo · REST via httpx' },
-      { id: 'store', type: 'svc', x: 590, y: 580, w: 240, h: 80, title: 'File storage', sub: 'local or S3 (boto3) · FFmpeg' },
-    ],
-    edges: [
-      { f: 'web', fs: 't', fo: -35, t: 'api', ts: 'l', to2: -40, via: [[35, 105]], label: 'REST + JWT cookie', lp: [100, 105] },
-      { f: 'api', fs: 'l', fo: 50, t: 'web', ts: 't', to2: 35, via: [[105, 195]], dash: true, label: 'SSE events', lp: [150, 195] },
-      { f: 'api', fs: 'b', fo: -50, t: 'redis', ts: 't', to2: -50, label: 'enqueue job', lp: [300, 260] },
-      { f: 'redis', fs: 'b', fo: -50, t: 'worker', ts: 't', to2: -50, label: 'run job', lp: [300, 420] },
-      { f: 'worker', fs: 't', fo: 90, t: 'redis', ts: 'b', to2: 90, dash: true, label: 'progress', lp: [440, 420] },
-      { f: 'api', fs: 'r', fo: -30, t: 'pg', ts: 'l', to2: -30 },
-      { f: 'worker', fs: 'r', fo: -70, t: 'pg', ts: 'l', to2: 30, via: [[545, 480], [545, 150]] },
-      { f: 'worker', fs: 'r', fo: 15, t: 'prov', ts: 'l', to2: 0, via: [[560, 565], [560, 495]] },
-      { f: 'worker', fs: 'r', fo: 70, t: 'store', ts: 'l', to2: 0 },
-    ],
-  },
-};
-
-/* ============ Renderer ============ */
-const SVGNS = 'http://www.w3.org/2000/svg';
-const TAGS = { llm: 'LLM', code: 'CODE', job: 'JOB', user: 'USER' };
-let markerSeq = 0;
-
-function anchor(n, side, off = 0) {
-  const cx = n.x + n.w / 2, cy = n.y + n.h / 2;
-  if (side === 't') return [cx + off, n.y];
-  if (side === 'b') return [cx + off, n.y + n.h];
-  if (side === 'l') return [n.x, cy + off];
-  return [n.x + n.w, cy + off];
+// Giá một hạng = trung bình giá các model đúng hạng (mọi loại API), chỉ tính model có giá ở độ phân giải đang chọn.
+// Thiếu model đúng hạng thì lấy hạng cao hơn gần nhất, rồi hạng thấp hơn.
+function tierPick(res, need) {
+  const c = MODELS.filter(m => m.tier != null && ROUTE_PROVS.includes(m.prov) && mp(m, res) != null);
+  if (!c.length) return null;
+  let pool = c.filter(m => m.tier === need), sub = false;
+  if (!pool.length) { sub = true; const up = c.filter(m => m.tier > need); const t = up.length ? Math.min(...up.map(m => m.tier)) : Math.max(...c.map(m => m.tier)); pool = c.filter(m => m.tier === t); }
+  const avg = pool.reduce((a, m) => a + mp(m, res), 0) / pool.length;
+  return { price: avg, label: (pool.length > 1 ? "TB " : "") + pool.map(m => m.id).join(" + ") + (sub ? " (thay thế, thiếu hạng " + TIER[need] + ")" : "") };
 }
-const horiz = s => s === 'l' || s === 'r';
-
-function autoVia(p1, fs, p2, ts) {
-  if (!ts) return [];
-  if (horiz(fs) && horiz(ts)) { if (p1[1] === p2[1]) return []; const mx = (p1[0] + p2[0]) / 2; return [[mx, p1[1]], [mx, p2[1]]]; }
-  if (!horiz(fs) && !horiz(ts)) { if (p1[0] === p2[0]) return []; const my = (p1[1] + p2[1]) / 2; return [[p1[0], my], [p2[0], my]]; }
-  if (!horiz(fs) && horiz(ts)) return [[p1[0], p2[1]]];
-  return [[p2[0], p1[1]]];
-}
-
-function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
-
-function render(host, d) {
-  host.style.width = d.w + 'px';
-  host.style.height = d.h + 'px';
-  const byId = Object.fromEntries(d.nodes.map(n => [n.id, n]));
-  const mid = 'arrow' + (markerSeq++);
-
-  (d.groups || []).forEach(g => {
-    const div = el('div', 'group' + (g.panel ? ' panel' : '') + (g.gen ? ' gen' : ''));
-    Object.assign(div.style, { left: g.x + 'px', top: g.y + 'px', width: g.w + 'px', height: g.h + 'px' });
-    div.appendChild(el('div', 'glabel', g.label));
-    host.appendChild(div);
+function routing(res, secs) {
+  const [prem, std, bud] = state.mix.map(x => x / 100);
+  const parts = [bud, std, prem].map((s, need) => {
+    const t = tierPick(res, need);
+    return t && { tier: TIER[need], v: TIER_VAR[need], share: s, usd: secs * s * t.price, model: t.label };
   });
+  return parts.every(Boolean) ? { parts, total: parts.reduce((a, p) => a + p.usd, 0) } : { parts: [], total: null };
+}
+const fmtP = (m, k, res) => { const o = m.o[k] || m.o["*"]; return o && o[res] != null ? o[res].toFixed(3) : "—"; };
+const median = a => { const s = a.slice().sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
 
-  const svg = document.createElementNS(SVGNS, 'svg');
-  svg.setAttribute('class', 'layer-edges');
-  svg.setAttribute('width', d.w); svg.setAttribute('height', d.h);
-  svg.setAttribute('viewBox', `0 0 ${d.w} ${d.h}`);
-  svg.innerHTML = `<defs>
-    <marker id="${mid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6E7886"/></marker>
-    <marker id="${mid}l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A65A16"/></marker>
-  </defs>`;
-  host.appendChild(svg);
-
-  d.edges.forEach(e => {
-    const a = byId[e.f];
-    const p1 = e.from || anchor(a, e.fs, e.fo || 0);
-    const p2 = e.t ? anchor(byId[e.t], e.ts, e.to2 || 0) : e.to;
-    const via = e.via || autoVia(p1, e.fs, p2, e.ts);
-    const pts = [p1, ...via, p2];
-    const path = document.createElementNS(SVGNS, 'path');
-    path.setAttribute('d', pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ',' + p[1]).join(' '));
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', e.loop ? '#A65A16' : '#6E7886');
-    path.setAttribute('stroke-width', e.dot ? 1.6 : 2);
-    if (e.dash) path.setAttribute('stroke-dasharray', e.dot ? '3 5' : '7 5');
-    path.setAttribute('marker-end', `url(#${mid}${e.loop ? 'l' : ''})`);
-    svg.appendChild(path);
-    if (e.label) {
-      let lp = e.lp;
-      if (!lp) { // midpoint of the longest segment
-        let best = 0;
-        for (let i = 0; i < pts.length - 1; i++) {
-          const L = Math.abs(pts[i + 1][0] - pts[i][0]) + Math.abs(pts[i + 1][1] - pts[i][1]);
-          if (L > best) { best = L; lp = [(pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2]; }
-        }
-      }
-      const lab = el('div', 'elabel' + (e.loop ? ' loop' : ''), e.label);
-      lab.style.left = lp[0] + 'px'; lab.style.top = lp[1] + 'px';
-      host.appendChild(lab);
-    }
+function compute() {
+  const secs = 300 * state.retry, res = state.res;
+  const rivals = MODELS.filter(m => state.prov === "all" || m.prov === state.prov).map(m => {
+    const per = mp(m, res);
+    return { kind: "rival", label: m.id, sub: `${m.prov} · hạng ${tierName(m)} · ${m.kinds}`, total: per == null ? null : per * secs, per, m };
   });
-
-  d.nodes.forEach(n => {
-    if (n.type === 'decision') {
-      const poly = document.createElementNS(SVGNS, 'polygon');
-      const { x, y, w, h } = n;
-      poly.setAttribute('points', `${x + w / 2},${y} ${x + w},${y + h / 2} ${x + w / 2},${y + h} ${x},${y + h / 2}`);
-      poly.setAttribute('fill', n.user ? '#E6F4EC' : '#FCEFE2');
-      poly.setAttribute('stroke', n.user ? '#2E7D4F' : '#A65A16');
-      poly.setAttribute('stroke-width', 2);
-      svg.appendChild(poly);
-      const lab = el('div', 'dlabel');
-      Object.assign(lab.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
-      if (n.user) lab.appendChild(Object.assign(el('div', 'tag', 'USER'), { style: 'background:#2E7D4F' }));
-      lab.appendChild(el('div', 't', n.title));
-      if (n.sub) lab.appendChild(el('div', 's', n.sub));
-      host.appendChild(lab);
-      return;
-    }
-    const div = el('div', 'node ' + n.type + (n.chip ? ' chip' : ''));
-    Object.assign(div.style, { left: n.x + 'px', top: n.y + 'px', width: n.w + 'px', height: n.h + 'px' });
-    const tag = n.tag || TAGS[n.type];
-    if (!n.chip && (n.n || tag)) {
-      const row = el('div', 'row');
-      row.appendChild(el('span', 'num', n.n ? n.n : ''));
-      if (tag) row.appendChild(el('span', 'tag', tag));
-      div.appendChild(row);
-    }
-    const t = el('div', 't', n.title);
-    if (n.small) { t.style.fontSize = '13px'; t.style.fontWeight = '600'; t.style.fontFamily = "'IBM Plex Sans', sans-serif"; }
-    div.appendChild(t);
-    if (n.sub) div.appendChild(el('div', 's', n.sub));
-    if (n.small) { div.style.padding = '4px 10px'; div.style.alignItems = 'center'; }
-    host.appendChild(div);
-  });
-
-  (d.notes || []).forEach(nt => {
-    const div = el('div', 'note', nt.html);
-    Object.assign(div.style, { left: nt.x + 'px', top: nt.y + 'px', width: nt.w + 'px' });
-    host.appendChild(div);
-  });
+  const ours = [{ kind: "ours", label: "Routing của mình", sub: `${state.mix[0]}% premium · ${state.mix[1]}% standard · ${state.mix[2]}% budget`, ...routing(res, secs) }];
+  const rows = [...rivals, ...ours];
+  return { ok: rows.filter(r => r.total != null).sort((a, b) => a.total - b.total), na: rows.filter(r => r.total == null), secs, ours, rivals };
 }
 
-document.querySelectorAll('[data-diagram]').forEach(h => render(h, DIAGRAMS[h.dataset.diagram]));
-
-/* ============ Navigation + scaling ============ */
-const slides = [...document.querySelectorAll('.slide')];
-const deck = document.getElementById('deck');
-const count = document.getElementById('count');
-let cur = Math.min(Math.max(parseInt(location.hash.slice(1), 10) - 1 || 0, 0), slides.length - 1);
-
-function show(i) {
-  cur = Math.min(Math.max(i, 0), slides.length - 1);
-  slides.forEach((s, k) => s.classList.toggle('active', k === cur));
-  count.textContent = (cur + 1) + ' / ' + slides.length;
-  history.replaceState(null, '', '#' + (cur + 1));
+function renderTiers() {
+  const rows = MODELS.slice().sort((a, b) => (b.tier ?? -1) - (a.tier ?? -1));
+  document.getElementById("tiers").innerHTML =
+    `<tr><th>Model</th><th>Hãng</th><th>Hạng</th><th>Loại API</th><th>Vào routing</th></tr>` +
+    rows.map(m => {
+      const inPool = ROUTE_PROVS.includes(m.prov) && m.tier != null;
+      return `<tr><td>${m.id}</td><td>${m.prov}</td><td>${tierName(m)}</td><td>${m.kinds}</td><td>${inPool ? "có" : "không"}</td></tr>`;
+    }).join("");
 }
-function fit() {
-  const de = document.documentElement;
-  const s = Math.min(de.clientWidth / 1600, de.clientHeight / 900);
-  deck.style.transform = `scale(${s})`;
+
+function render() {
+  const { ok, na, secs, ours, rivals } = compute();
+  const max = (ok.length ? Math.max(...ok.map(r => r.total)) : 1) * 1.16;
+  const vals = rivals.filter(r => r.total != null).map(r => r.total);
+  const med = vals.length ? median(vals) : NaN, rt = ours[0].total;
+  const res = state.res;
+  // Mốc so sánh: chạy full premium cả tập (giá hạng premium của routing, cùng cách lấy trung bình), tức chất lượng mà routing giữ cho scene quan trọng.
+  const pt = tierPick(res, 2), prem = pt ? pt.price * secs : null;
+  const diff = (t, base) => { const d = Math.round((t / base - 1) * 100); return (d <= 0 ? "−" : "+") + Math.abs(d) + "%"; };
+
+  document.getElementById("hero").innerHTML = `
+    <div class="tile ours"><div class="k">Routing của mình${rt != null && prem ? `<span class="pill">${diff(rt, prem)} vs full premium</span>` : ""}</div><div class="v">${usd(rt ?? NaN)}</div><div class="d">${rt == null ? `Không đủ model ở ${res}` : state.mix.join("/") + " premium / standard / budget"}</div></div>
+    <div class="tile"><div class="k">Full premium cả tập</div><div class="v">${usd(prem ?? NaN)}</div><div class="d">${pt ? pt.label : "—"}, ${res}</div></div>
+    <div class="tile"><div class="k">Model chạy full một model</div><div class="v">${vals.length ? usd(Math.min(...vals)) + " – " + usd(Math.max(...vals)) : "—"}</div><div class="d">${vals.length} model ở ${res}${vals.length ? ", trung vị " + usd(med) : ""}</div></div>`;
+
+  document.getElementById("chartNote").textContent =
+    `${res}, đã gồm tiếng. ${secs.toFixed(0)}s gen (300s × retry ×${state.retry.toFixed(1)}). Mix premium/standard/budget ${state.mix.join("/")}. Giá một hạng = trung bình các model đúng hạng (mọi loại API), chỉ tính model có giá ở ${res}; model dùng giá R2V nếu có, không thì I2V.`;
+
+  const bar = r => {
+    const w = r.total / max * 100;
+    const segs = r.kind === "rival"
+      ? `<div class="seg-bar" style="background:var(--rival);width:100%" title="${r.label}: ${usd(r.total)}"></div>`
+      : r.parts.slice().reverse().map(p => `<div class="seg-bar" style="background:var(--t-${p.v});flex:${Math.max(p.usd, 0.01)}" title="${p.tier} · ${p.model}: ${usd(p.usd)}"></div>`).join("");
+    return `<div class="row ${r.kind}"><div class="name"><b>${r.label}${r.kind === "ours" ? '<span class="tag">của mình</span>' : ""}</b><span>${r.sub}</span></div>
+      <div class="track"><div class="bar" style="width:${w}%">${segs}</div><div class="val" style="left:${w}%">${usd(r.total)}</div></div></div>`;
+  };
+  document.getElementById("chart").innerHTML = ok.map(bar).join("") +
+    na.map(r => `<div class="row"><div class="name"><b>${r.label}</b><span>${r.sub}</span></div><div class="na">Không có ${res}</div></div>`).join("");
+
+  const all = rivals.filter(r => r.total != null);
+  const gmax = (all.length ? Math.max(...all.map(r => r.total)) : 1) * 1.05;
+  document.getElementById("rangeNote").textContent = `${res}. Thanh cam = từ model rẻ nhất đến đắt nhất của hãng chạy full một model.` + (rt != null ? ` Vạch xanh = routing của mình (${usd(rt)}).` : "");
+  document.getElementById("ranges").innerHTML = ["Vidu", "Kling", "Seedance", "Veo"].map(pv => {
+    const t = all.filter(r => r.m.prov === pv).map(r => r.total);
+    if (!t.length) return `<div class="row"><div class="name"><b>${pv}</b><span>0 model</span></div><div class="na">Không có ${res}</div></div>`;
+    const lo = Math.min(...t), hi = Math.max(...t);
+    return `<div class="row"><div class="name"><b>${pv}</b><span>${t.length} model · <span class="rlab">${usd(lo)} – ${usd(hi)}</span></span></div>
+      <div class="rtrack"><div class="rng" style="left:${lo / gmax * 100}%;width:${Math.max((hi - lo) / gmax * 100, 0.8)}%" title="${pv}: ${usd(lo)} – ${usd(hi)}"></div>${rt != null ? `<div class="rmark" style="left:${rt / gmax * 100}%"></div>` : ""}</div></div>`;
+  }).join("");
+
+  document.getElementById("tbl").innerHTML =
+    `<tr><th>Cấu hình</th><th>Hãng</th><th>Nguồn giá</th><th>R2V $/giây</th><th>I2V $/giây</th><th>Tổng 300s</th><th>Ghi chú</th></tr>` +
+    ok.map(r => r.kind === "rival"
+      ? `<tr><td>${r.label}</td><td>${r.m.prov}</td><td>${r.m.src === "official" ? "chính thức" : "bên thứ ba"}</td><td>${fmtP(r.m, "R2V", res)}</td><td>${fmtP(r.m, "I2V", res)}</td><td>${usd(r.total)}</td><td>${r.m.note}</td></tr>`
+      : `<tr><td>${r.label}</td><td>của mình</td><td>—</td><td>—</td><td>—</td><td>${usd(r.total)}</td><td>${r.parts.slice().reverse().map(p => `${p.tier}: ${p.model} (${usd(p.usd)})`).join(" · ")}</td></tr>`).join("");
+
+  document.getElementById("foot").innerHTML =
+    `<b>Cách đọc.</b> Ước tính: tập 300s ghép từ nhiều clip ngắn, tổng = giá/giây × số giây gen. Mỗi scene có hạng cần (premium: cao trào, chuyển động mạnh, cận mặt, từ 2 nhân vật; standard: 1 nhân vật; budget: không nhân vật). Routing chỉ dùng model catalog của Vidu, Kling, Seedance; Veo và model chưa xếp hạng chỉ xuất hiện ở dạng chạy full. Router thật còn giữ model scene trước, ưu tiên ảnh có tên và theo lựa chọn của user. ` +
+    `<b>So sánh.</b> Ô "vs full premium" so routing với việc chạy cả tập bằng model premium (trung bình các model premium trong routing), tức mức chất lượng mà routing giữ cho các scene quan trọng. ` +
+    `<b>Nguồn giá</b> (đối chiếu lại 2026-11-03). Vidu và Gemini Omni 720p đọc được trang chính thức. Vidu niêm yết RMB 0.03125/credit, repo quy đổi $0.005/credit; nếu tỉ giá ~7.2 thì credit khoảng $0.0043, giá Vidu thực có thể thấp hơn ~13%. Vidu q3-turbo và q3-pro có giá giờ thấp điểm bằng khoảng nửa khi bật tiếng (trang không tính). Kling, Seedance, Veo: trang chính thức không đọc trực tiếp được, dùng nguồn bên thứ ba trích bảng chính thức, các nguồn đã khớp nhau trừ Seedance 1.5 Pro / 2.0 Mini (chỉ có giá bên bán lại). Vidu không có phụ phí tiếng ở q3. Veo 3 / 3 Fast, Seedance 1.0 và Kling 2.x bị bỏ vì chỉ có giá không tiếng. ` +
+    `<b>Giả định chưa đo.</b> Tỉ lệ hạng, tỉ lệ loại API theo chế độ, retry. Chất lượng không có trong biểu đồ. App hiện chỉ gen được Vidu.`;
 }
-document.getElementById('prev').onclick = () => show(cur - 1);
-document.getElementById('next').onclick = () => show(cur + 1);
-document.addEventListener('keydown', e => {
-  if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(cur + 1); }
-  if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
-  if (e.key === 'Home') show(0);
-  if (e.key === 'End') show(slides.length - 1);
+
+function bind(id, key, num) {
+  document.querySelectorAll(`#${id} button`).forEach(b => b.addEventListener("click", () => {
+    state[key] = num === "list" ? b.dataset.v.split(",").map(Number) : b.dataset.v;
+    document.querySelectorAll(`#${id} button`).forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  }));
+}
+bind("res", "res"); bind("prov", "prov"); bind("mix", "mix", "list");
+document.getElementById("retry").addEventListener("input", e => {
+  state.retry = Number(e.target.value);
+  document.getElementById("retryV").textContent = "×" + state.retry.toFixed(1);
+  render();
 });
-window.addEventListener('resize', fit);
-if (document.fonts) document.fonts.ready.then(fit);
-fit(); show(cur);
+renderTiers();
+render();
 </script>
+
 </body>
 </html>
