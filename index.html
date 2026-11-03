@@ -98,7 +98,7 @@ details summary { cursor: pointer; font-size: 14px; color: var(--ink-2); padding
     <div class="ctl"><span class="lab">Tỉ lệ scene premium / standard / budget</span>
       <div class="seg" id="mix"><button data-v="30,30,40" aria-pressed="false">30/30/40</button><button data-v="20,50,30" aria-pressed="true">20/50/30</button><button data-v="50,30,20" aria-pressed="false">50/30/20</button></div></div>
     <div class="ctl"><span class="lab">Hãng</span>
-      <div class="seg" id="prov"><button data-v="all" aria-pressed="true">Tất cả</button><button data-v="Vidu" aria-pressed="false">Vidu</button><button data-v="Kling" aria-pressed="false">Kling</button><button data-v="Seedance" aria-pressed="false">Seedance</button><button data-v="Veo" aria-pressed="false">Veo</button></div></div>
+      <div class="seg" id="prov"><button data-v="all" aria-pressed="true">Tất cả</button><button data-v="Vidu" aria-pressed="false">Vidu</button><button data-v="Kling" aria-pressed="false">Kling</button><button data-v="Seedance" aria-pressed="false">Seedance</button><button data-v="Google" aria-pressed="false">Google</button></div></div>
     <div class="ctl"><label for="retry">Retry: <b id="retryV" style="font-family:var(--mono)">×1.0</b></label>
       <input id="retry" type="range" min="1" max="3" step="0.5" value="1"></div>
   </section>
@@ -146,7 +146,7 @@ details summary { cursor: pointer; font-size: 14px; color: var(--ink-2); padding
 <script>
 // Đơn giá USD/giây, ĐÃ GỒM TIẾNG. `o[loại]` = giá theo loại API (R2V / I2V; "*" = chưa rõ loại, dùng cho mọi loại). Chỉ 720p và 1080p.
 // `tier`: hạng trong catalog repo (apps/api/app/core/video_catalog.py, tra 2026-10-19); không có `tier` = chưa xếp hạng.
-// `src`: "official" = đối chiếu được trang chính thức ngày 2026-11-03; "3p" = chỉ có nguồn bên thứ ba (trang chính thức không đọc được).
+// `src`: "official" = đối chiếu được trang chính thức ngày 2026-11-03; "3p" = chỉ có nguồn bên thứ ba.
 const MODELS = [
   // --- Vidu: platform.vidu.com/docs/pricing (credit × $0.005 theo config repo; trang chính thức chỉ niêm yết RMB 0.03125/credit). Tiếng là tham số, không có phụ phí q3 ---
   { id: "Vidu q3-turbo",     prov: "Vidu", tier: 0, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.050, "1080p": 0.065 }, I2V: { "720p": 0.060, "1080p": 0.065 } }, note: "R2V 10 / 13 credit, I2V 12 / 13 credit." },
@@ -155,22 +155,18 @@ const MODELS = [
   { id: "Vidu q3-pro",       prov: "Vidu", tier: 1, src: "official", kinds: "T2V · I2V", o: { I2V: { "720p": 0.100 } }, note: "720p 20 credit. Trang chính thức có dòng 1080p nhưng để trống giá (catalog repo ghi 24 credit, chưa kiểm được) nên bỏ khỏi 1080p. Elo I2V 1016." },
   { id: "Vidu q3-mix",       prov: "Vidu", tier: 1, src: "official", kinds: "R2V", o: { R2V: { "720p": 0.120, "1080p": 0.145 } }, note: "24 / 29 credit. Hạng suy theo q3-pro." },
   { id: "Vidu q4-preview",   prov: "Vidu", tier: 1, src: "official", kinds: "I2V · R2V", o: { R2V: { "720p": 0.095, "1080p": 0.120 }, I2V: { "720p": 0.095, "1080p": 0.120 } }, note: "19 / 24 credit, R2V và I2V cùng giá. R2V chưa nhận ảnh có tên." },
-  // --- Kling: bảng kling.ai/dev/pricing (đọc 2026-08-21) theo chinamodelapi.com, trùng các nguồn khác; trang Kling không đọc được trực tiếp.
-  //     v3 có tiếng = $0.084 / $0.112 × 1.5; Omni và Turbo có tiếng rẻ hơn v3 ($0.112 / $0.140) ---
-  { id: "Kling v3",          prov: "Kling", tier: 1, src: "3p", kinds: "T2V · I2V", o: { I2V: { "720p": 0.126, "1080p": 0.168 } }, note: "Không tiếng $0.084 / $0.112, tiếng ×1.5. Khớp catalog repo. Elo I2V 1000." },
-  { id: "Kling v3-omni",     prov: "Kling", tier: 1, src: "3p", kinds: "R2V", o: { R2V: { "720p": 0.112, "1080p": 0.140 } }, note: "Không tiếng $0.084 / $0.112, có tiếng $0.112 / $0.140 (không có video đầu vào). Catalog repo đang ghi ×1.5 = $0.126 / $0.168: lệch." },
-  { id: "Kling v3-turbo",    prov: "Kling", tier: 1, src: "3p", kinds: "T2V · I2V", o: { I2V: { "720p": 0.112, "1080p": 0.140 } }, note: "Tiếng luôn bật, một giá. Khớp catalog repo. Hạng suy theo v3." },
-  // --- Seedance (BytePlus ModelArk, giá token rộng × cao × 24 / 1024 × $/M; trang docs.byteplus.com không đọc được, số $/M từ nguồn bên thứ ba, không có video đầu vào) ---
-  { id: "Seedance 1.5 Pro",  prov: "Seedance", src: "3p", kinds: "chưa rõ", o: { "*": { "720p": 0.047, "1080p": 0.047 } }, note: "Atlas Cloud (bên bán lại), giá phẳng, chưa rõ gồm tiếng. Không tìm được giá chính thức BytePlus." },
-  { id: "Seedance 2.0 Mini", prov: "Seedance", src: "3p", kinds: "chưa rõ", o: { "*": { "720p": 0.056 } }, note: "Atlas Cloud (bên bán lại), giá phẳng. Tối đa 720p, không có 1080p. ByteDance niêm yết 720p khoảng ¥0.5/giây (~$0.07); BytePlus chưa có giá USD." },
-  { id: "Seedance 2.0 Fast", prov: "Seedance", tier: 1, src: "3p", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1210 }, I2V: { "720p": 0.1210 } }, note: "$5.6/M token. Không có 1080p. Hạng suy theo 2.0 (hạ một bậc)." },
-  { id: "Seedance 2.0",      prov: "Seedance", tier: 2, src: "3p", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1512, "1080p": 0.3742 }, I2V: { "720p": 0.1512, "1080p": 0.3742 } }, note: "$7.0 / $7.7 mỗi M token. Elo I2V 1121." },
-  { id: "Seedance 2.5",      prov: "Seedance", tier: 2, src: "3p", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.2311, "1080p": 0.5686 }, I2V: { "720p": 0.2311, "1080p": 0.5686 } }, note: "$10.7 / $11.7 mỗi M token (ModelArk, 2026-10-14, có tiếng không phụ phí). 1080p mới xuất hiện từ tháng 10, cần kiểm trong console. Elo I2V 1138." },
-  // --- Veo / Gemini (Gemini API, giá có tiếng; Veo 3 / 3 Fast chỉ có giá chỉ-video nên bỏ) ---
-  { id: "Veo 3.1 Lite",      prov: "Veo", src: "3p", kinds: "chưa có trong catalog", o: { "*": { "720p": 0.05, "1080p": 0.08 } }, note: "Theo bảng giá Google đọc lại ngày 2026-10-13 (benchlm.ai), nhiều nguồn trùng. Gemini API luôn có tiếng." },
-  { id: "Veo 3.1 Fast",      prov: "Veo", src: "3p", kinds: "chưa có trong catalog", o: { "*": { "720p": 0.10, "1080p": 0.12 } }, note: "Như Lite. Giá đã giảm từ $0.15 (tháng 4)." },
-  { id: "Veo 3.1",           prov: "Veo", src: "3p", kinds: "chưa có trong catalog", o: { "*": { "720p": 0.40, "1080p": 0.40 } }, note: "Như Lite. Một nguồn ghi Veo 3.1 ngừng 2026-10-22, thay bằng Gemini Omni: chưa kiểm được." },
-  { id: "Gemini Omni 1.1 Flash", prov: "Veo", tier: 2, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1014, "1080p": 0.152 }, I2V: { "720p": 0.1014, "1080p": 0.152 } }, note: "720p: $17.5/M token × 5.792 token/s (trang Google). 1080p là upscale, giá bên thứ ba. Chưa có transport nên không vào routing." },
+  // --- Kling: kling.ai/dev/pricing (đọc 2026-11-03, 1 Unit = $0.14 giá niêm yết). v3 có tiếng 0.9 / 1.2 Unit; Omni có tiếng (không video đầu vào) và Turbo 0.8 / 1.0 Unit ---
+  { id: "Kling v3",          prov: "Kling", tier: 1, src: "official", kinds: "T2V · I2V", o: { I2V: { "720p": 0.126, "1080p": 0.168 } }, note: "0.9 / 1.2 Unit có tiếng (không tiếng 0.6 / 0.8 Unit = $0.084 / $0.112). Khớp catalog repo. Elo I2V 1000." },
+  { id: "Kling v3-omni",     prov: "Kling", tier: 1, src: "official", kinds: "R2V", o: { R2V: { "720p": 0.112, "1080p": 0.140 } }, note: "0.8 / 1.0 Unit có tiếng, không video đầu vào (có video đầu vào: 0.9 / 1.2 Unit, không tiếng). Catalog repo đang ghi $0.126 / $0.168: lệch." },
+  { id: "Kling v3-turbo",    prov: "Kling", tier: 1, src: "official", kinds: "T2V · I2V", o: { I2V: { "720p": 0.112, "1080p": 0.140 } }, note: "0.8 / 1.0 Unit, tiếng luôn bật. Khớp catalog repo. Hạng suy theo v3." },
+  // --- Seedance: docs.byteplus.com/en/docs/modelark/model-pricing (đọc 2026-11-03), bảng "Input without video", $/M token.
+  //     Token = giây × rộng × cao × fps / 1024 (fps 24): 720p = 21,600 token/giây, 1080p = 48,600 token/giây. Có tiếng, chỉ tính video gen thành công ---
+  { id: "Seedance 2.0 Mini", prov: "Seedance", src: "official", kinds: "chưa rõ", o: { "*": { "720p": 0.0756 } }, note: "$3.5/M token. Không có 1080p." },
+  { id: "Seedance 2.0 Fast", prov: "Seedance", tier: 1, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1210 }, I2V: { "720p": 0.1210 } }, note: "$5.6/M token. Không có 1080p. Hạng suy theo 2.0 (hạ một bậc)." },
+  { id: "Seedance 2.0",      prov: "Seedance", tier: 2, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1512, "1080p": 0.3742 }, I2V: { "720p": 0.1512, "1080p": 0.3742 } }, note: "$7.0 / $7.7 mỗi M token. Elo I2V 1121." },
+  { id: "Seedance 2.5",      prov: "Seedance", tier: 2, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.2311, "1080p": 0.5686 }, I2V: { "720p": 0.2311, "1080p": 0.5686 } }, note: "$10.7 / $11.7 mỗi M token. Elo I2V 1138." },
+  // --- Google: Veo 3.1 Preview (Lite / Fast / thường) trên Gemini API đã ngừng 2026-10-22 (ai.google.dev/gemini-api/docs/deprecations), thay bằng Gemini Omni; bỏ khỏi trang ---
+  { id: "Gemini Omni 1.1 Flash", prov: "Google", tier: 2, src: "official", kinds: "T2V · I2V · R2V", o: { R2V: { "720p": 0.1014, "1080p": 0.152 }, I2V: { "720p": 0.1014, "1080p": 0.152 } }, note: "720p: $17.5/M token × 5,792 token/giây (trang Google). 1080p là upscale, giá bên thứ ba. Chưa có transport nên không vào routing." },
 ];
 const ROUTE_PROVS = ["Vidu", "Kling", "Seedance"];
 const TIER = ["budget", "standard", "premium"], TIER_VAR = ["budget", "std", "prem"];
@@ -254,7 +250,7 @@ function render() {
   const all = rivals.filter(r => r.total != null);
   const gmax = (all.length ? Math.max(...all.map(r => r.total)) : 1) * 1.05;
   document.getElementById("rangeNote").textContent = `${res}. Thanh cam = từ model rẻ nhất đến đắt nhất của hãng chạy full một model.` + (rt != null ? ` Vạch xanh = routing của mình (${usd(rt)}).` : "");
-  document.getElementById("ranges").innerHTML = ["Vidu", "Kling", "Seedance", "Veo"].map(pv => {
+  document.getElementById("ranges").innerHTML = ["Vidu", "Kling", "Seedance", "Google"].map(pv => {
     const t = all.filter(r => r.m.prov === pv).map(r => r.total);
     if (!t.length) return `<div class="row"><div class="name"><b>${pv}</b><span>0 model</span></div><div class="na">Không có ${res}</div></div>`;
     const lo = Math.min(...t), hi = Math.max(...t);
@@ -269,9 +265,9 @@ function render() {
       : `<tr><td>${r.label}</td><td>của mình</td><td>—</td><td>—</td><td>—</td><td>${usd(r.total)}</td><td>${r.parts.slice().reverse().map(p => `${p.tier}: ${p.model} (${usd(p.usd)})`).join(" · ")}</td></tr>`).join("");
 
   document.getElementById("foot").innerHTML =
-    `<b>Cách đọc.</b> Ước tính: tập 300s ghép từ nhiều clip ngắn, tổng = giá/giây × số giây gen. Mỗi scene có hạng cần (premium: cao trào, chuyển động mạnh, cận mặt, từ 2 nhân vật; standard: 1 nhân vật; budget: không nhân vật). Routing chỉ dùng model catalog của Vidu, Kling, Seedance; Veo và model chưa xếp hạng chỉ xuất hiện ở dạng chạy full. Router thật còn giữ model scene trước, ưu tiên ảnh có tên và theo lựa chọn của user. ` +
+    `<b>Cách đọc.</b> Ước tính: tập 300s ghép từ nhiều clip ngắn, tổng = giá/giây × số giây gen. Mỗi scene có hạng cần (premium: cao trào, chuyển động mạnh, cận mặt, từ 2 nhân vật; standard: 1 nhân vật; budget: không nhân vật). Routing chỉ dùng model catalog của Vidu, Kling, Seedance; Google và model chưa xếp hạng chỉ xuất hiện ở dạng chạy full. Router thật còn giữ model scene trước, ưu tiên ảnh có tên và theo lựa chọn của user. ` +
     `<b>So sánh.</b> Ô "vs full premium" so routing với việc chạy cả tập bằng model premium (trung bình các model premium trong routing), tức mức chất lượng mà routing giữ cho các scene quan trọng. ` +
-    `<b>Nguồn giá</b> (đối chiếu lại 2026-11-03). Vidu và Gemini Omni 720p đọc được trang chính thức. Vidu niêm yết RMB 0.03125/credit, repo quy đổi $0.005/credit; nếu tỉ giá ~7.2 thì credit khoảng $0.0043, giá Vidu thực có thể thấp hơn ~13%. Vidu q3-turbo và q3-pro có giá giờ thấp điểm bằng khoảng nửa khi bật tiếng (trang không tính). Kling, Seedance, Veo: trang chính thức không đọc trực tiếp được, dùng nguồn bên thứ ba trích bảng chính thức, các nguồn đã khớp nhau trừ Seedance 1.5 Pro / 2.0 Mini (chỉ có giá bên bán lại). Vidu không có phụ phí tiếng ở q3. Veo 3 / 3 Fast, Seedance 1.0 và Kling 2.x bị bỏ vì chỉ có giá không tiếng. ` +
+    `<b>Nguồn giá</b> (đối chiếu trang chính thức 2026-11-03). Vidu: platform.vidu.com; Kling: kling.ai/dev/pricing (1 Unit = $0.14); Seedance: bảng giá BytePlus ModelArk; Google: bảng giá Gemini API. Riêng Gemini Omni 1080p (upscale) Google chưa niêm yết, dùng giá bên thứ ba. Vidu niêm yết RMB 0.03125/credit, repo quy đổi $0.005/credit; nếu tỉ giá ~7.2 thì credit khoảng $0.0043, giá Vidu thực có thể thấp hơn ~13%. Vidu q3-turbo và q3-pro có giá giờ thấp điểm bằng khoảng nửa khi bật tiếng (trang không tính). Vidu không có phụ phí tiếng ở q3. Đã bỏ: Veo 3.1 / Fast / Lite (Gemini API ngừng 2026-10-22), Seedance 1.5 Pro (ngừng 2026-11-11), Seedance 1.0 và Kling 2.x (chỉ có giá không tiếng). ` +
     `<b>Giả định chưa đo.</b> Tỉ lệ hạng, tỉ lệ loại API theo chế độ, retry. Chất lượng không có trong biểu đồ. App hiện chỉ gen được Vidu.`;
 }
 
